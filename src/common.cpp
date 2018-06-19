@@ -1,7 +1,6 @@
 // common.c -- misc functions used in client and server
 #include "common.h"
 #include "game_version.h"
-#include "CommandLine.h"
 
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
@@ -755,8 +754,8 @@ static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 Com_InitJournaling
 =================
 */
-void Com_InitJournaling( void ) {
-	Com_StartupVariable( "journal" );
+void Com_InitJournaling(CommandLine& cli) {
+	cli.StartupVariable("journal");
 	com_journal = Cvar_Get ("journal", "0", CVAR_INIT);
 	if ( !com_journal->integer ) {
 		return;
@@ -1262,9 +1261,9 @@ void Com_Init(int argc, const char **argv) {
 		Sys_StreamInit();
 #endif
 
-		FS_InitFilesystem ();
+		FS_InitFilesystem(cli);
 
-		Com_InitJournaling();
+		Com_InitJournaling(cli);
 
 		Cbuf_AddText ("exec mpdefault.cfg\n");
 

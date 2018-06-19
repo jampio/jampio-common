@@ -1,6 +1,8 @@
-#include "CommandLine.h"
-#include "common.h"
 #include <algorithm>
+#include <jampio/shared/shared.h>
+#include "cvar.h"
+#include "cmd.h"
+#include "CommandLine.h"
 
 // combines into a single string
 // skips the first arg
