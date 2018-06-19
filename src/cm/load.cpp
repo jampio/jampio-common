@@ -2,6 +2,8 @@
 //Anything above this #include will be ignored by the compiler
 #include "local.h"
 #include "../rmg/manager.h"
+#include "../fs.h"
+#include "../cvar.h"
 
 #ifdef BSPC
 

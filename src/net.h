@@ -7,6 +7,7 @@ NET
 ==============================================================
 */
 #include <jampio/shared/shared.h>
+#include "netadr.h"
 
 constexpr auto PACKET_BACKUP = 32;  // number of old messages that must be kept on client and
                                    // server for delta comrpession and ping estimation
@@ -21,28 +22,9 @@ constexpr auto MAX_DOWNLOAD_WINDOW = 8; // max of eight download frames
 constexpr auto MAX_DOWNLOAD_BLKSIZE = 2048; // 2048 byte block chunks
 
 typedef enum {
-	NA_BOT,
-	NA_BAD,					// an address lookup failed
-	NA_LOOPBACK,
-	NA_BROADCAST,
-	NA_IP,
-	NA_IPX,
-	NA_BROADCAST_IPX
-} netadrtype_t;
-
-typedef enum {
 	NS_CLIENT,
 	NS_SERVER
 } netsrc_t;
-
-typedef struct {
-	netadrtype_t	type;
-
-	byte	ip[4];
-	byte	ipx[10];
-
-	unsigned short	port;
-} netadr_t;
 
 void		NET_Init( void );
 void		NET_Shutdown( void );

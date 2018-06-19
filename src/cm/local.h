@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common.h"
+#include "cm.h"
 #include "polylib.h"
 #include "landscape.h"
 

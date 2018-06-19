@@ -1,7 +1,7 @@
 #pragma once
 
 #include <jampio/shared/shared.h>
-#include "filefmt.h"
+#include "../filefmt.h"
 
 #ifdef _XBOX
 void		CM_LoadMap( const char *name, qboolean clientload, int *checksum);
