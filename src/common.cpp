@@ -1,6 +1,7 @@
 // common.c -- misc functions used in client and server
 #include "common.h"
 #include "game_version.h"
+#include "CommandLine.h"
 
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
@@ -380,7 +381,7 @@ quake3 set test blah + map test
 
 ============================================================================
 */
-
+#if 0 // jampio - DEPRECATED by CommandLine.cpp
 #define	MAX_CONSOLE_LINES	32
 int		com_numConsoleLines;
 char	*com_consoleLines[MAX_CONSOLE_LINES];
@@ -500,7 +501,7 @@ qboolean Com_AddStartupCommands( void ) {
 
 	return added;
 }
-
+#endif
 
 //============================================================================
 
@@ -1211,21 +1212,21 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 Com_Init
 =================
 */
-void Com_Init( char *commandLine ) {
+void Com_Init(int argc, const char **argv) {
 	char	*s;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
 
 	try
 	{
-	  // bk001129 - do this before anything else decides to push events
-	  Com_InitPushEvent();
+		// bk001129 - do this before anything else decides to push events
+		Com_InitPushEvent();
 
 		Cvar_Init ();
 
 		// prepare enough of the subsystems to handle
 		// cvar and command buffer management
-		Com_ParseCommandLine( commandLine );
+		CommandLine cli(argc, argv);
 
 	//	Swap_Init ();
 		Cbuf_Init ();
@@ -1240,13 +1241,13 @@ void Com_Init( char *commandLine ) {
 		Cmd_Init ();
 
 		// override anything from the config files with command line args
-		Com_StartupVariable( NULL );
+		cli.StartupVariable(nullptr);
 
 		// Seed the random number generator
 		Rand_Init(Sys_Milliseconds(true));
 
 		// get the developer cvar set as early as possible
-		Com_StartupVariable( "developer" );
+		cli.StartupVariable("developer");
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
@@ -1268,7 +1269,7 @@ void Com_Init( char *commandLine ) {
 		Cbuf_AddText ("exec mpdefault.cfg\n");
 
 		// skip the jampconfig.cfg if "safe" is on the command line
-		if ( !Com_SafeMode() ) {
+		if ( !cli.SafeMode() ) {
 #ifdef DEDICATED
 			Cbuf_AddText ("exec jampserver.cfg\n");
 #else
@@ -1281,7 +1282,7 @@ void Com_Init( char *commandLine ) {
 		Cbuf_Execute ();
 
 		// override anything from the config files with command line args
-		Com_StartupVariable( NULL );
+		cli.StartupVariable(nullptr);
 
 	  // get dedicated here for proper hunk megs initialization
 	#ifdef DEDICATED
@@ -1401,7 +1402,7 @@ void Com_Init( char *commandLine ) {
 
 
 		// add + commands from command line
-		if ( !Com_AddStartupCommands() ) 
+		if ( !cli.AddStartupCommands() ) 
 		{
 			// if the user didn't give any commands, run default action
 			if ( !com_dedicated->integer ) 
