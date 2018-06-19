@@ -17,6 +17,7 @@ message(STATUS "  in path: " ${MINIZIP_LIBDIR})
 set(SOURCES
 	src/cm/load.cpp
 	src/cmd.cpp
+	src/CommandLine.cpp
 	src/common.cpp
 	src/cvar.cpp
 	src/files.cpp
