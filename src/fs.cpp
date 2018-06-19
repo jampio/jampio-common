@@ -11,7 +11,16 @@
  *
  *****************************************************************************/
 #include <minizip/unzip.h>
-#include "common.h"
+#include "com.h"
+#include "com_vars.h"
+#include "fs.h"
+#include "sys.h"
+#include "interface/client.h"
+#include "protocol.h"
+#include "memory.h"
+#include "cmd.h"
+#include "cvar.h"
+#include "CommandLine.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -3445,17 +3454,17 @@ Called only at inital startup, not when the filesystem
 is resetting due to a game change
 ================
 */
-void FS_InitFilesystem( void ) {
+void FS_InitFilesystem(CommandLine& cli) {
 	// allow command line parms to override our defaults
 	// we have to specially handle this, because normal command
 	// line variable sets don't happen until after the filesystem
 	// has already been initialized
-	Com_StartupVariable( "fs_cdpath" );
-	Com_StartupVariable( "fs_basepath" );
-	Com_StartupVariable( "fs_homepath" );
-	Com_StartupVariable( "fs_game" );
-	Com_StartupVariable( "fs_copyfiles" );
-	Com_StartupVariable( "fs_restrict" );
+	cli.StartupVariable( "fs_cdpath" );
+	cli.StartupVariable( "fs_basepath" );
+	cli.StartupVariable( "fs_homepath" );
+	cli.StartupVariable( "fs_game" );
+	cli.StartupVariable( "fs_copyfiles" );
+	cli.StartupVariable( "fs_restrict" );
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
@@ -3483,7 +3492,7 @@ void FS_InitFilesystem( void ) {
 FS_Restart
 ================
 */
-void FS_Restart( int checksumFeed ) {
+void FS_Restart(CommandLine& cli, int checksumFeed) {
 
 	// free anything we currently have loaded
 	FS_Shutdown(qfalse);
@@ -3523,7 +3532,7 @@ void FS_Restart( int checksumFeed ) {
 	// bk010116 - new check before safeMode
 	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
 		// skip the jk2mpconfig.cfg if "safe" is on the command line
-		if ( !Com_SafeMode() ) {
+		if ( !cli.SafeMode() ) {
 #ifdef DEDICATED
 			Cbuf_AddText ("exec jk2mpserver.cfg\n");
 #else

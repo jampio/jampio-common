@@ -4,6 +4,9 @@
 #include "../rmg/manager.h"
 #include "../fs.h"
 #include "../cvar.h"
+#include "../memory.h"
+#include "../sys.h"
+#include "../com_vars.h"
 
 #ifdef BSPC
 

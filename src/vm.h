@@ -48,7 +48,7 @@ typedef struct vm_s {
 	int			callLevel;			// for debug indenting
 	int			breakFunction;		// increment breakCount on function entry to this
 	int			breakCount;
-};
+} vm_t;
 
 typedef enum {
 	VMI_NATIVE,

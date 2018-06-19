@@ -1,5 +1,9 @@
 // cvar.c -- dynamic variable tracking
-#include "common.h"
+#include "cmd.h"
+#include "memory.h"
+#include "com.h"
+#include "fs.h"
+#include "cvar.h"
 
 cvar_t		*cvar_vars;
 cvar_t		*cvar_cheats;

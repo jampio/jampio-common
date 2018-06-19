@@ -1,17 +1,19 @@
 // common.c -- misc functions used in client and server
-#include "common.h"
+#include "com.h"
 #include "game_version.h"
-
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
-#ifndef __linux__
-//#include <windows.h>
-#include "../qcommon/platform.h"
-#endif
-
-#ifdef _XBOX
-#include "../xbox/XBLive.h"
-#endif
+#include "interface/client.h"
+#include "interface/server.h"
+#include "sys.h"
+#include "fs.h"
+#include "cvar.h"
+#include "memory.h"
+#include "net.h"
+#include "msg.h"
+#include "cmd.h"
+#include "vm.h"
+#include "cm/cm.h"
 
 #define	MAXPRINTMSG	4096
 

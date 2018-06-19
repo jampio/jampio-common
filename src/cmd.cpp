@@ -1,5 +1,13 @@
 // cmd.c -- Quake script command processing module
-#include "common.h"
+#include "com.h"
+#include "com_vars.h"
+#include "cmd.h"
+#include "fs.h"
+#include "cvar.h"
+#include "memory.h"
+#include "interface/client.h"
+#include "interface/server.h"
+#include "interface/ui.h"
 
 #define	MAX_CMD_BUFFER	16384
 #define	MAX_CMD_LINE	1024

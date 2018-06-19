@@ -18,9 +18,9 @@ set(SOURCES
 	src/cm/load.cpp
 	src/cmd.cpp
 	src/CommandLine.cpp
-	src/common.cpp
+	src/com.cpp
 	src/cvar.cpp
-	src/files.cpp
+	src/fs.cpp
 )
 add_library(jampiocommonpc STATIC ${SOURCES})
 add_library(jampiocommonded STATIC ${SOURCES})
