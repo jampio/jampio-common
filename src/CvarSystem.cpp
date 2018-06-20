@@ -253,3 +253,16 @@ void CvarSystem::Update(vmCvar_t *vmCvar) {
 	vmCvar->value = cv->value();
 	vmCvar->integer = cv->integer();
 }
+
+void CvarSystem::CvarIter(void (*callback)(Cvar& cvar)) {
+	for (auto& pair : m_table) {
+		auto& cvar = pair.second;
+		// Dont show internal cvars
+		if (cvar.flags() & CVAR_INTERNAL) continue;
+		callback(cvar);
+	}
+}
+
+std::size_t CvarSystem::size() const {
+	return m_table.size();
+}

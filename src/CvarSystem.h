@@ -26,6 +26,7 @@ public:
 	const char *VariableString(const char *name);
 	void VariableStringBuffer(const char *name, char *buffer, int bufsize);
 	void CommandCompletion(void (*callback)(const char *cvar_name));
+	void CvarIter(void (*callback)(Cvar&));
 	// If the variable already exists, the value will not be set unless CVAR_ROM
 	// The flags will be or'ed in if the variable exists.
 	Cvar &Get(const char *name, const char *value, int flags);
@@ -37,5 +38,6 @@ public:
 	// Handles variable inspection and changing from the console
 	bool Command(CommandArgs& args);
 	void Register(vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags);
-	void Update(vmCvar_t *vmCvar); 
+	void Update(vmCvar_t *vmCvar);
+	std::size_t size() const; 
 };
