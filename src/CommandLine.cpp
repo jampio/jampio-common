@@ -2,7 +2,6 @@
 #include <jampio/shared/shared.h>
 #include "CommandLine.h"
 #include "CommandArgs.h"
-#include "cvar.h"
 
 // combines into a single string
 // skips the first arg
@@ -34,8 +33,9 @@ static std::vector<std::string> split(const std::string& str) {
 	return res;
 }
 
-CommandLine::CommandLine(CommandBuffer& cbuf, int argc, const char **argv)
+CommandLine::CommandLine(CommandBuffer& cbuf, CvarSystem& cvars, int argc, const char **argv)
 	: m_cbuf(cbuf)
+	, m_cvars(cvars)
 	, m_lines(split(combine(argc, argv)))
 {}
 
@@ -58,9 +58,9 @@ void CommandLine::StartupVariable(const char *match) {
 		if (Q_stricmp(args.Argv(0), "set")) continue;
 		auto s = args.Argv(1);
 		if (!match || !Q_stricmp(s, match)) {
-			Cvar_Set(s, args.Argv(2));
-			auto cv = Cvar_Get(s, "", 0);
-			cv->flags |= CVAR_USER_CREATED;
+			m_cvars.Set(s, args.Argv(2));
+			auto cv = m_cvars.Get(s, "", 0);
+			cv.add_flag(CVAR_USER_CREATED);
 		}
 	}
 }

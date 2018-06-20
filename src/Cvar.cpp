@@ -1,4 +1,5 @@
 #include "Cvar.h"
+#include <memory>
 
 Cvar::Cvar()
 	: m_name()
@@ -58,4 +59,8 @@ void Cvar::remove_flag(int flag) {
 
 void Cvar::add_flag(int flag) {
 	m_flags |= flag;
+}
+
+Cvar::operator Cvar*() & {
+	return this;
 }

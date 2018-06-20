@@ -7,69 +7,60 @@
 #include "interface/server.h"
 #include "sys.h"
 #include "fs.h"
-#include "cvar.h"
 #include "memory.h"
 #include "net.h"
 #include "msg.h"
-#include "cmd.h"
 #include "vm.h"
 #include "cm/cm.h"
+#include "CvarSystem.h"
 
 #define	MAXPRINTMSG	4096
-
 #define MAX_NUM_ARGVS	50
 
 int		com_argc;
 char	*com_argv[MAX_NUM_ARGVS+1];
 
-
 #ifdef USE_CD_KEY
-
 extern char cl_cdkey[34];
-
 #endif // USE_CD_KEY
 
 FILE *debuglogfile;
-fileHandle_t logfile;
+fileHandle_t	logfile;
 fileHandle_t	com_journalFile;			// events are written here
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_viewlog;
-cvar_t	*com_speeds;
-cvar_t	*com_developer;
-cvar_t	*com_vmdebug;
-cvar_t	*com_dedicated;
-cvar_t	*com_timescale;
-cvar_t	*com_fixedtime;
-cvar_t	*com_dropsim;		// 0.0 to 1.0, simulated packet drops
-cvar_t	*com_journal;
-cvar_t	*com_maxfps;
-cvar_t	*com_timedemo;
-cvar_t	*com_sv_running;
-cvar_t	*com_cl_running;
-cvar_t	*com_logfile;		// 1 = buffer log, 2 = flush after each print
-cvar_t	*com_showtrace;
-
-cvar_t	*com_optvehtrace;
-
+Cvar	*com_viewlog;
+Cvar	*com_speeds;
+Cvar	*com_developer;
+Cvar	*com_vmdebug;
+Cvar	*com_dedicated;
+Cvar	*com_timescale;
+Cvar	*com_fixedtime;
+Cvar	*com_dropsim;		// 0.0 to 1.0, simulated packet drops
+Cvar	*com_journal;
+Cvar	*com_maxfps;
+Cvar	*com_timedemo;
+Cvar	*com_sv_running;
+Cvar	*com_cl_running;
+Cvar	*com_logfile;		// 1 = buffer log, 2 = flush after each print
+Cvar	*com_showtrace;
+Cvar	*com_optvehtrace;
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
 #endif
-
-cvar_t	*com_terrainPhysics; //rwwRMG - added
-
-cvar_t	*com_version;
-cvar_t	*com_blood;
-cvar_t	*com_buildScript;	// for automated data building scripts
-cvar_t	*com_introPlayed;
-cvar_t	*cl_paused;
-cvar_t	*sv_paused;
-cvar_t	*com_cameraMode;
+Cvar	*com_terrainPhysics; //rwwRMG - added
+Cvar	*com_version;
+Cvar	*com_blood;
+Cvar	*com_buildScript;	// for automated data building scripts
+Cvar	*com_introPlayed;
+Cvar	*cl_paused;
+Cvar	*sv_paused;
+Cvar	*com_cameraMode;
 #if defined(_WIN32) && defined(_DEBUG)
 cvar_t	*com_noErrorInterrupt;
 #endif
 
-cvar_t	*com_RMG;
+Cvar	*com_RMG;
 
 // com_speeds times
 int		time_game;
@@ -86,6 +77,8 @@ qboolean	com_fullyInitialized;
 char	com_errorMessage[MAXPRINTMSG];
 
 void Com_WriteConfig_f( void );
+
+static CvarSystem *m_cvars;
 
 //============================================================================
 
@@ -159,7 +152,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	}
 
 	// echo to console if we're not a dedicated server
-	if ( com_dedicated && !com_dedicated->integer ) {
+	if ( com_dedicated && !com_dedicated->integer() ) {
 		CL_ConsolePrint( msg, silent );
 	}
 
@@ -168,7 +161,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 #ifndef _XBOX
-	if ( com_logfile && com_logfile->integer ) {
+	if ( com_logfile && com_logfile->integer() ) {
 		if ( !logfile && FS_Initialized() ) {
 			struct tm *newtime;
 			time_t aclock;
@@ -178,7 +171,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
 			Com_Printf( "logfile opened on %s\n", asctime( newtime ) );
-			if ( com_logfile->integer > 1 ) {
+			if ( com_logfile->integer() > 1 ) {
 				// force it to not buffer so we get valid
 				// data even if we are crashing
 				FS_ForceFlush(logfile);
@@ -211,7 +204,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
 		
-	if ( !com_developer || !com_developer->integer ) {
+	if ( !com_developer || !com_developer->integer() ) {
 		return;			// don't confuse non-developers with techie stuff...
 	}
 
@@ -267,7 +260,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 	// when we are running automated scripts, make sure we
 	// know if anything failed
-	if ( com_buildScript && com_buildScript->integer ) {
+	if ( com_buildScript && com_buildScript->integer() ) {
 		code = ERR_FATAL;
 	}
 
@@ -295,8 +288,8 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_end (argptr);
 
 	if ( code != ERR_DISCONNECT ) {
-		Cvar_Get("com_errorMessage", "", CVAR_ROM);	//give com_errorMessage a default so it won't come back to life after a resetDefaults
-		Cvar_Set("com_errorMessage", com_errorMessage);
+		m_cvars->Get("com_errorMessage", "", CVAR_ROM);	//give com_errorMessage a default so it won't come back to life after a resetDefaults
+		m_cvars->Set("com_errorMessage", com_errorMessage);
 	}
 
 	if ( code == ERR_SERVERDISCONNECT ) {
@@ -326,7 +319,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		throw ("DROPPED\n");
 	} else if ( code == ERR_NEED_CD ) {
 		SV_Shutdown( "Server didn't have CD\n" );
-		if ( com_cl_running && com_cl_running->integer ) {
+		if ( com_cl_running && com_cl_running->integer() ) {
 			CL_Disconnect( qtrue );
 			CL_FlushMemory( );
 			com_errorEntered = qfalse;
@@ -756,25 +749,25 @@ static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 Com_InitJournaling
 =================
 */
-void Com_InitJournaling(CommandLine& cli) {
+void Com_InitJournaling(CvarSystem& cvars, CommandLine& cli) {
 	cli.StartupVariable("journal");
-	com_journal = Cvar_Get ("journal", "0", CVAR_INIT);
-	if ( !com_journal->integer ) {
+	com_journal = cvars.Get("journal", "0", CVAR_INIT);
+	if ( !com_journal->integer() ) {
 		return;
 	}
 
-	if ( com_journal->integer == 1 ) {
+	if ( com_journal->integer() == 1 ) {
 		Com_Printf( "Journaling events\n");
 		com_journalFile = FS_FOpenFileWrite( "journal.dat" );
 		com_journalDataFile = FS_FOpenFileWrite( "journaldata.dat" );
-	} else if ( com_journal->integer == 2 ) {
+	} else if ( com_journal->integer() == 2 ) {
 		Com_Printf( "Replaying journaled events\n");
 		FS_FOpenFileRead( "journal.dat", &com_journalFile, qtrue );
 		FS_FOpenFileRead( "journaldata.dat", &com_journalDataFile, qtrue );
 	}
 
 	if ( !com_journalFile || !com_journalDataFile ) {
-		Cvar_Set( "com_journal", "0" );
+		cvars.Set( "com_journal", "0" );
 		com_journalFile = 0;
 		com_journalDataFile = 0;
 		Com_Printf( "Couldn't open journal files\n" );
@@ -791,7 +784,7 @@ sysEvent_t	Com_GetRealEvent( void ) {
 	sysEvent_t	ev;
 
 	// either get an event from the system or the journal file
-	if ( com_journal->integer == 2 ) {
+	if ( com_journal->integer() == 2 ) {
 		r = FS_Read( &ev, sizeof(ev), com_journalFile );
 		if ( r != sizeof(ev) ) {
 			Com_Error( ERR_FATAL, "Error reading from journal file" );
@@ -807,7 +800,7 @@ sysEvent_t	Com_GetRealEvent( void ) {
 		ev = Sys_GetEvent();
 
 		// write the journal value out if needed
-		if ( com_journal->integer == 1 ) {
+		if ( com_journal->integer() == 1 ) {
 			r = FS_Write( &ev, sizeof(ev), com_journalFile );
 			if ( r != sizeof(ev) ) {
 				Com_Error( ERR_FATAL, "Error writing to journal file" );
@@ -896,16 +889,16 @@ void Com_RunAndTimeServerPacket( netadr_t *evFrom, msg_t *buf ) {
 
 	t1 = 0;
 
-	if ( com_speeds->integer ) {
+	if ( com_speeds->integer() ) {
 		t1 = Sys_Milliseconds ();
 	}
 
 	SV_PacketEvent( *evFrom, buf );
 
-	if ( com_speeds->integer ) {
+	if ( com_speeds->integer() ) {
 		t2 = Sys_Milliseconds ();
 		msec = t2 - t1;
-		if ( com_speeds->integer == 3 ) {
+		if ( com_speeds->integer() == 3 ) {
 			Com_Printf( "SV_PacketEvent time: %i\n", msec );
 		}
 	}
@@ -918,7 +911,7 @@ Com_EventLoop
 Returns last event time
 =================
 */
-int Com_EventLoop( void ) {
+int Com_EventLoop(CommandBuffer& cbuf) {
 	sysEvent_t	ev;
 	netadr_t	evFrom;
 	byte		bufData[MAX_MSGLEN];
@@ -938,7 +931,7 @@ int Com_EventLoop( void ) {
 
 			while ( NET_GetLoopPacket( NS_SERVER, &evFrom, &buf ) ) {
 				// if the server just shut down, flush the events
-				if ( com_sv_running->integer ) {
+				if ( com_sv_running->integer() ) {
 					Com_RunAndTimeServerPacket( &evFrom, &buf );
 				}
 			}
@@ -969,22 +962,22 @@ int Com_EventLoop( void ) {
 		case SE_CONSOLE:
 			if ( ((char *)ev.evPtr)[0] == '\\' || ((char *)ev.evPtr)[0] == '/' ) 
 			{
-				Cbuf_AddText( (char *)ev.evPtr+1 );	
+				cbuf.AddText( (char *)ev.evPtr+1 );	
 			}
 			else
 			{
-				Cbuf_AddText( (char *)ev.evPtr );
+				cbuf.AddText( (char *)ev.evPtr );
 			}
-			Cbuf_AddText( "\n" );
+			cbuf.AddText( "\n" );
 			break;
 		case SE_PACKET:
 			// this cvar allows simulation of connections that
 			// drop a lot of packets.  Note that loopback connections
 			// don't go through here at all.
-			if ( com_dropsim->value > 0 ) {
+			if ( com_dropsim->value() > 0 ) {
 				static int seed;
 
-				if ( Q_random( &seed ) < com_dropsim->value ) {
+				if ( Q_random( &seed ) < com_dropsim->value() ) {
 					break;		// drop this packet
 				}
 			}
@@ -1001,7 +994,7 @@ int Com_EventLoop( void ) {
 				continue;
 			}
 			Com_Memcpy( buf.data, (byte *)((netadr_t *)ev.evPtr + 1), buf.cursize );
-			if ( com_sv_running->integer ) {
+			if ( com_sv_running->integer() ) {
 				Com_RunAndTimeServerPacket( &evFrom, &buf );
 			} else {
 				CL_PacketEvent( evFrom, &buf );
@@ -1050,8 +1043,8 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
-	if ( Cmd_Argc() > 1 ) {
+static void Com_Error_f(CommandArgs& args) {
+	if ( args.Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
 		Com_Error( ERR_FATAL, "Testing fatal error" );
@@ -1067,15 +1060,15 @@ Just freeze in place for a given number of seconds to test
 error recovery
 =============
 */
-static void Com_Freeze_f (void) {
+static void Com_Freeze_f(CommandArgs& args) {
 	float	s;
 	int		start, now;
 
-	if ( Cmd_Argc() != 2 ) {
+	if (args.Argc() != 2 ) {
 		Com_Printf( "freeze <seconds>\n" );
 		return;
 	}
-	s = atof( Cmd_Argv(1) );
+	s = atof( args.Argv(1) );
 
 	start = Com_Milliseconds();
 
@@ -1094,7 +1087,7 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void Com_Crash_f() {
 	* ( int * ) 0 = 0x12345678;
 }
 
@@ -1213,11 +1206,8 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 Com_Init
 =================
 */
-void Com_Init(CommandLine& cli) {
-	char	*s;
-
-	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
-
+void Com_Init(CvarSystem& cvars, CommandLine& cli, CommandBuffer& cbuf, CommandSystem& cmd) {
+	Com_Printf("%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__);
 	try
 	{
 		// bk001129 - do this before anything else decides to push events

@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 #include <string>
 
@@ -30,4 +30,5 @@ public:
 	bool has_flag(int flag) const;
 	void remove_flag(int flag);
 	void add_flag(int flag);
+	operator Cvar*() &;
 };

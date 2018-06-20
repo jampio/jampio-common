@@ -190,3 +190,66 @@ Cvar &CvarSystem::Set2(const char *var_name, const char *value, bool force) {
 	var.m_integer = atoi(var.string());
 	return var;
 }
+
+bool CvarSystem::Command(CommandArgs& args) {
+	// check variables
+	auto opt_var = FindVar(args.Argv(0));
+	if (!opt_var) return false;
+	Cvar &v = *opt_var;
+	// perform a variable print or set
+	if (args.Argc() == 1) {
+		Com_Printf("\"%s\" is:\"%s" S_COLOR_WHITE "\" default:\"%s" S_COLOR_WHITE "\"\n", v.name(), v.string(), v.resetString());
+		if (!v.m_latchedString.empty()) {
+			Com_Printf("latched: \"%s\"\n", v.latchedString());
+		}
+		return qtrue;
+	}
+	// JFM toggle test
+	const char *value;
+	value = args.Argv(1);
+	if (value[0] == '!') {// toggle
+		char buff[5];
+		sprintf(buff, "%i", !v.value());
+		Set2(v.name(), buff, false); // toggle the value
+	} else {
+		Set2(v.name(), value, false); // set the value if forcing isn't required
+	}
+	return true;
+}
+
+void CvarSystem::Register(vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags) {
+	auto& cv = Get(varName, defaultValue, flags);
+	if (!vmCvar) {
+		return;
+	}
+	vmCvar->handle = (int) std::addressof(cv);
+	vmCvar->modificationCount = -1;
+	Update(vmCvar);
+}
+
+void CvarSystem::Update(vmCvar_t *vmCvar) {
+	assert(vmCvar); // bk
+	auto cv = (Cvar *) vmCvar->handle;
+	if (cv->modificationCount() == vmCvar->modificationCount) {
+		return;
+	}
+	if (cv->m_string.empty()) {
+		return;		// variable might have been cleared by a cvar_restart
+	}
+	vmCvar->modificationCount = cv->modificationCount();
+	// bk001129 - mismatches.
+	if ( strlen(cv->string())+1 > MAX_CVAR_VALUE_STRING ) 
+	  Com_Error( ERR_DROP, "Cvar_Update: src %s length %d exceeds MAX_CVAR_VALUE_STRING",
+		     cv->string(), 
+		     strlen(cv->string()), 
+		     sizeof(vmCvar->string) );
+	// bk001212 - Q_strncpyz guarantees zero padding and dest[MAX_CVAR_VALUE_STRING-1]==0 
+	// bk001129 - paranoia. Never trust the destination string.
+	// bk001129 - beware, sizeof(char*) is always 4 (for cv->string). 
+	//            sizeof(vmCvar->string) always MAX_CVAR_VALUE_STRING
+	//Q_strncpyz( vmCvar->string, cv->string, sizeof( vmCvar->string ) ); // id
+	Q_strncpyz(vmCvar->string, cv->string(),  MAX_CVAR_VALUE_STRING); 
+
+	vmCvar->value = cv->value();
+	vmCvar->integer = cv->integer();
+}

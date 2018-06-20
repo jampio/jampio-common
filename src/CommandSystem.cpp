@@ -4,11 +4,11 @@
 #include "interface/server.h"
 #include "interface/client.h"
 #include "interface/ui.h"
-#include "cvar.h"
-#include "cmd.h"
+#include "CommandArgs.h"
 
-CommandSystem::CommandSystem()
-	: m_wait(0)
+CommandSystem::CommandSystem(CvarSystem& cvars)
+	: m_cvars(cvars)
+	, m_wait(0)
 	, m_table()
 {}
 
@@ -20,7 +20,7 @@ bool CommandSystem::ShouldWait() {
 	return false;
 }
 
-void CommandSystem::AddCommand(std::string name, std::function<void()> handler) {
+void CommandSystem::AddCommand(std::string name, std::function<void(CommandArgs&)> handler) {
 	auto search = m_table.find(name);
 	if (search == m_table.end()) {
 		m_table.insert(std::make_pair(std::move(name), std::move(handler)));
@@ -38,35 +38,35 @@ void CommandSystem::RemoveCommand(const char *name) {
 
 void CommandSystem::ExecuteString(const char *text) {
 	// execute the command line
-	Cmd_TokenizeString( text );		
-	if ( !Cmd_Argc() ) {
+	auto args = CommandArgs::TokenizeString(text);
+	if (!args.Argc()) {
 		return;		// no tokens
 	}
 
-	auto search = m_table.find(Cmd_Argv(0));
+	auto search = m_table.find(args.Argv(0));
 	if (search != m_table.end()) {
 		if (search->second) {
-			return search->second();
+			return search->second(args);
 		}
 	}
 	
 	// check cvars
-	if ( Cvar_Command() ) {
+	if (m_cvars.Command(args)) {
 		return;
 	}
 
 	// check client game commands
-	if ( com_cl_running && com_cl_running->integer && CL_GameCommand() ) {
+	if ( com_cl_running && com_cl_running->integer() && CL_GameCommand() ) {
 		return;
 	}
 
 	// check server game commands
-	if ( com_sv_running && com_sv_running->integer && SV_GameCommand() ) {
+	if ( com_sv_running && com_sv_running->integer() && SV_GameCommand() ) {
 		return;
 	}
 
 	// check ui commands
-	if ( com_cl_running && com_cl_running->integer && UI_GameCommand() ) {
+	if ( com_cl_running && com_cl_running->integer() && UI_GameCommand() ) {
 		return;
 	}
 

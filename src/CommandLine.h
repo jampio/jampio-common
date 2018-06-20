@@ -18,13 +18,15 @@ quake3 set test blah + map test
 #include <vector>
 #include <string>
 #include "CommandBuffer.h"
+#include "CvarSystem.h"
 
 class CommandLine {
 private:
 	std::vector<std::string> m_lines;
 	CommandBuffer& m_cbuf;
+	CvarSystem& m_cvars;
 public:
-	CommandLine(CommandBuffer& cbuf, int argc, const char **argv);
+	CommandLine(CommandBuffer& cbuf, CvarSystem& cvars, int argc, const char **argv);
 	/**
 	 * Check for "safe" on the command line, which will
 	 * skip loading of jampconfig.cfg

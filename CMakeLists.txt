@@ -15,14 +15,13 @@ message(STATUS "  in path: " ${ZIP_LIBDIR})
 pkg_check_modules(MINIZIP minizip REQUIRED)
 message(STATUS "  in path: " ${MINIZIP_LIBDIR})
 set(SOURCES
-	src/cm/load.cpp
-	src/cmd.cpp
+	# src/cm/load.cpp
+	src/cvar_init.cpp
 	src/CommandArgs.cpp
 	src/CommandBuffer.cpp
 	src/CommandLine.cpp
 	src/CommandSystem.cpp
 	src/com.cpp
-	src/cvar.cpp
 	src/Cvar.cpp
 	src/CvarSystem.cpp
 	src/fs.cpp

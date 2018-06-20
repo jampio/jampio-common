@@ -6,6 +6,7 @@
 #include <optional>
 #include <functional>
 #include "Cvar.h"
+#include "CommandArgs.h"
 
 class CvarSystem {
 private:
@@ -16,8 +17,8 @@ private:
 		}
 	};
 	std::map<std::string, Cvar, IgnorecaseCompare> m_table;
-	Cvar &Set2(const char *var_name, const char *value, bool force);
 public:
+	Cvar &Set2(const char *var_name, const char *value, bool force);
 	CvarSystem();
 	std::optional<std::reference_wrapper<Cvar>> FindVar(const char *name);
 	float VariableValue(const char *name);
@@ -34,7 +35,7 @@ public:
 	void Reset(const char *name);
 	void SetCheatState();
 	// Handles variable inspection and changing from the console
-	bool Command();
+	bool Command(CommandArgs& args);
 	void Register(vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags);
 	void Update(vmCvar_t *vmCvar); 
 };
