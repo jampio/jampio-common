@@ -1,6 +1,7 @@
 #include <cstring>
 #include <algorithm>
 #include "CommandBuffer.h"
+#include "com.h"
 
 CommandBuffer::CommandBuffer(CommandSystem& cmd) 
 	: m_cmd(cmd)
