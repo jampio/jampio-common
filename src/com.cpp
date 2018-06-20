@@ -1213,7 +1213,7 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 Com_Init
 =================
 */
-void Com_Init(int argc, const char **argv) {
+void Com_Init(CommandLine& cli) {
 	char	*s;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
@@ -1227,7 +1227,7 @@ void Com_Init(int argc, const char **argv) {
 
 		// prepare enough of the subsystems to handle
 		// cvar and command buffer management
-		CommandLine cli(argc, argv);
+		// CommandLine cli(argc, argv);
 
 	//	Swap_Init ();
 		Cbuf_Init ();

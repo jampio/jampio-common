@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <jampio/shared/shared.h>
-#include "cvar.h"
-#include "cmd.h"
 #include "CommandLine.h"
+#include "CommandArgs.h"
+#include "cvar.h"
 
 // combines into a single string
 // skips the first arg
@@ -34,15 +34,16 @@ static std::vector<std::string> split(const std::string& str) {
 	return res;
 }
 
-CommandLine::CommandLine(int argc, const char **argv)
-	: m_lines(split(combine(argc, argv)))
+CommandLine::CommandLine(CommandBuffer& cbuf, int argc, const char **argv)
+	: m_cbuf(cbuf)
+	, m_lines(split(combine(argc, argv)))
 {}
 
 bool CommandLine::SafeMode() {
 	bool res = false;
 	std::remove_if(m_lines.begin(), m_lines.end(), [&](auto& str) {
-		Cmd_TokenizeString(str.c_str());
-		if (!Q_stricmp(Cmd_Argv(0), "start") || !Q_stricmp(Cmd_Argv(0), "cvar_restart")) {
+		auto args = CommandArgs::TokenizeString(str.c_str());
+		if (!Q_stricmp(args.Argv(0), "start") || !Q_stricmp(args.Argv(0), "cvar_restart")) {
 			res = true;
 			return true;
 		}
@@ -53,11 +54,11 @@ bool CommandLine::SafeMode() {
 
 void CommandLine::StartupVariable(const char *match) {
 	for (auto& cmd : m_lines) {
-		Cmd_TokenizeString(cmd.c_str());
-		if (Q_stricmp(Cmd_Argv(0), "set")) continue;
-		auto s = Cmd_Argv(1);
+		auto args = CommandArgs::TokenizeString(cmd.c_str());
+		if (Q_stricmp(args.Argv(0), "set")) continue;
+		auto s = args.Argv(1);
 		if (!match || !Q_stricmp(s, match)) {
-			Cvar_Set(s, Cmd_Argv(2));
+			Cvar_Set(s, args.Argv(2));
 			auto cv = Cvar_Get(s, "", 0);
 			cv->flags |= CVAR_USER_CREATED;
 		}
@@ -71,8 +72,8 @@ bool CommandLine::AddStartupCommands() {
 		if (Q_stricmpn(cmd.c_str(), "set", 3)) {
 			added = true;
 		}
-		Cbuf_AddText(cmd.c_str());
-		Cbuf_AddText("\n");
+		m_cbuf.AddText(cmd.c_str());
+		m_cbuf.AddText("\n");
 	}
 	return added;
 }
