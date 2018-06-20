@@ -23,10 +23,14 @@ set(SOURCES
 	src/CommandSystem.cpp
 	src/com.cpp
 	src/cvar.cpp
+	src/Cvar.cpp
+	src/CvarSystem.cpp
 	src/fs.cpp
 )
 add_library(jampiocommonpc STATIC ${SOURCES})
 add_library(jampiocommonded STATIC ${SOURCES})
+set_target_properties(jampiocommonpc PROPERTIES CXX_STANDARD 17)
+set_target_properties(jampiocommonded PROPERTIES CXX_STANDARD 17)
 target_compile_definitions(jampiocommonded PUBLIC DEDICATED)
 target_include_directories(jampiocommonpc PRIVATE ${ZLIB_INCLUDE_DIR} ${MINIZIP_INCLUDE_DIR})
 target_include_directories(jampiocommonded PRIVATE ${ZLIB_INCLUDE_DIR} ${MINIZIP_INCLUDE_DIR})
