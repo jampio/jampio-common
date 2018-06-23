@@ -16,6 +16,7 @@ pkg_check_modules(MINIZIP minizip REQUIRED)
 message(STATUS "  in path: " ${MINIZIP_LIBDIR})
 set(SOURCES
 	# src/cm/load.cpp
+	src/cmd_init.cpp
 	src/cvar_init.cpp
 	src/CommandArgs.cpp
 	src/CommandBuffer.cpp

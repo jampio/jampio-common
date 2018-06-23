@@ -24,13 +24,10 @@ constexpr auto NUM_ID_PAKS = 9;
 constexpr auto MAX_FILE_HANDLES = 64;
 
 qboolean FS_Initialized();
-
-void	FS_InitFilesystem (CommandLine& cli);
-void	FS_Shutdown( qboolean closemfp );
-
-qboolean	FS_ConditionalRestart( int checksumFeed );
-void	FS_Restart( int checksumFeed );
-// shutdown and restart the filesystem so changes to fs_gamedir can take effect
+void FS_InitFilesystem(CommandSystem& cmd, CvarSystem& cvars, CommandLine& cli);
+void FS_Shutdown(CommandSystem& cmd, qboolean closemfp);
+void FS_Restart(CommandSystem& cmd, CvarSystem& cvars, CommandBuffer& cbuf, CommandLine& cli, int checksumFeed);
+qboolean FS_ConditionalRestart(CommandSystem& cmd, CvarSystem& cvars, CommandBuffer& cbuf, CommandLine& cli, int checksumFeed);
 
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
 // directory should not have either a leading or trailing /

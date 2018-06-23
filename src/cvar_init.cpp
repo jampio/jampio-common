@@ -1,5 +1,6 @@
 #include "cvar_init.h"
 #include "com.h"
+#include "CommandSystem.h"
 
 /*
 ============
@@ -127,7 +128,7 @@ void Cvar_List_f(CvarSystem& cvars, CommandArgs& args) {
 	} else {
 		match = NULL;
 	}
-	cvars.CvarIter([](auto& var) {
+	cvars.CvarIter([&](auto& var) {
 		if (match && !Com_Filter(match, var.name(), qfalse)) return;
 
 		if (var.has_flag(CVAR_SERVERINFO)) {
@@ -171,57 +172,8 @@ void Cvar_List_f(CvarSystem& cvars, CommandArgs& args) {
 
 	Com_Printf("\n%i total cvars\n", cvars.size());
 }
-/*
-============
-Cvar_Restart_f
 
-Resets all cvars to their hardcoded values
-============
-*/
-void Cvar_Restart_f(CvarSytem& cvars) {
-	cvars.CvarIter([](auto& var) {
-		// don't mess with rom values, or some inter-module
-		// communication will get broken (com_cl_running, etc)
-		if ( var->flags & ( CVAR_ROM | CVAR_INIT | CVAR_NORESTART ) ) {
-			prev = &var->next;
-			continue;
-		}
-	});
-
-		// don't mess with rom values, or some inter-module
-		// communication will get broken (com_cl_running, etc)
-		if ( var->flags & ( CVAR_ROM | CVAR_INIT | CVAR_NORESTART ) ) {
-			prev = &var->next;
-			continue;
-		}
-
-		// throw out any variables the user created
-		if ( var->flags & CVAR_USER_CREATED ) {
-			*prev = var->next;
-			if ( var->name ) {
-				Cvar_FreeString( var->name );
-			}
-			if ( var->string ) {
-				Cvar_FreeString( var->string );
-			}
-			if ( var->latchedString ) {
-				Cvar_FreeString( var->latchedString );
-			}
-			if ( var->resetString ) {
-				Cvar_FreeString( var->resetString );
-			}
-			// clear the var completely, since we
-			// can't remove the index from the list
-			Com_Memset( var, 0, sizeof( var ) );
-			continue;
-		}
-
-		Cvar_Set( var->name, var->resetString );
-
-		prev = &var->next;
-	}
-}
-void Cvar_Init(CvarSystem& cvars, CommandSystem &cmd) {
+void Cvar_Init(CvarSystem& cvars, CommandSystem& cmd) {
 	(void) cvars.Get("sv_cheats", "0", CVAR_ROM | CVAR_SYSTEMINFO);
 	cmd.AddCommand("toggle", [&](auto& args) { 
 		Cvar_Toggle_f(cvars, args); 
@@ -242,9 +194,9 @@ void Cvar_Init(CvarSystem& cvars, CommandSystem &cmd) {
 		Cvar_Reset_f(cvars, args);
 	});
 	cmd.AddCommand("cvarlist", [&](auto& args) {
-		Cvar_List_f(cvars, args)
+		Cvar_List_f(cvars, args);
 	});
 	cmd.AddCommand("cvar_restart", [&](auto& args) {
-		Cvar_Restart_f(cvars, args);
+		cvars.Restart();
 	});
 }

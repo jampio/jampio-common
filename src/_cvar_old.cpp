@@ -950,6 +950,7 @@ Cvar_Init
 Reads in all archived cvars
 ============
 */
+#if 0
 void Cvar_Init (void) {
 	cvar_cheats = Cvar_Get("sv_cheats", "0", CVAR_ROM | CVAR_SYSTEMINFO );
 
@@ -962,6 +963,7 @@ void Cvar_Init (void) {
 	Cmd_AddCommand ("cvarlist", Cvar_List_f);
 	Cmd_AddCommand ("cvar_restart", Cvar_Restart_f);
 }
+#endif
 
 
 static void Cvar_Realloc(char **string, char *memPool, int &memPoolUsed)

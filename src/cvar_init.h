@@ -3,4 +3,4 @@
 #include "CvarSystem.h"
 #include "CommandSystem.h"
 
-void Cvar_Init(CvarSystem& cvars, CommandSystem &cmd);
+void Cvar_Init(CvarSystem& cvars, CommandSystem& cmd);

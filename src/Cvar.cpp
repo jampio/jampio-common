@@ -37,6 +37,10 @@ bool Cvar::modified() const {
 	return m_modified;
 }
 
+void Cvar::setModified(bool value) {
+	m_modified = value;
+}
+
 int Cvar::modificationCount() const {
 	return m_modificationCount;
 }

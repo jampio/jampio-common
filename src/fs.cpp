@@ -18,8 +18,6 @@
 #include "interface/client.h"
 #include "protocol.h"
 #include "memory.h"
-#include "cmd.h"
-#include "cvar.h"
 #include "CommandLine.h"
 
 #ifdef _WIN32
@@ -242,15 +240,15 @@ typedef struct searchpath_s {
 } searchpath_t;
 
 static	char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
-static	cvar_t		*fs_debug;
-static	cvar_t		*fs_homepath;
-static	cvar_t		*fs_basepath;
-static	cvar_t		*fs_basegame;
-static	cvar_t		*fs_cdpath;
-static	cvar_t		*fs_copyfiles;
-/*static*/ cvar_t	*fs_gamedirvar;
-static	cvar_t		*fs_restrict;
-static	cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
+static	Cvar		*fs_debug;
+static	Cvar		*fs_homepath;
+static	Cvar		*fs_basepath;
+static	Cvar		*fs_basegame;
+static	Cvar		*fs_cdpath;
+static	Cvar		*fs_copyfiles;
+/*static*/ Cvar	*fs_gamedirvar;
+static	Cvar		*fs_restrict;
+static	Cvar		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
 static	searchpath_t	*fs_searchpaths;
 static	int			fs_readCount;			// total bytes read
 static	int			fs_loadCount;			// total files read
@@ -472,11 +470,11 @@ char *FS_BuildOSPath( const char *qpath )
 	
 	toggle ^= 1;		// flip-flop to allow two returns without clash
 
-	Com_sprintf( temp, sizeof(temp), "/%s/%s", fs_gamedirvar->string, qpath );
+	Com_sprintf( temp, sizeof(temp), "/%s/%s", fs_gamedirvar->string(), qpath );
 
 	FS_ReplaceSeparators( temp );	
 	Com_sprintf( ospath[toggle], sizeof( ospath[0] ), "%s%s", 
-		fs_basepath->string, temp );
+		fs_basepath->string(), temp );
 	
 	return ospath[toggle];
 }
@@ -604,7 +602,7 @@ qboolean FS_FileExists( const char *file )
 	FILE *f;
 	char *testpath;
 
-	testpath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, file );
+	testpath = FS_BuildOSPath( fs_homepath->string(), fs_gamedir, file );
 
 	f = fopen( testpath, "rb" );
 	if (f) {
@@ -626,7 +624,7 @@ qboolean FS_SV_FileExists( const char *file )
 	FILE *f;
 	char *testpath;
 
-	testpath = FS_BuildOSPath( fs_homepath->string, file, "");
+	testpath = FS_BuildOSPath( fs_homepath->string(), file, "");
 	testpath[strlen(testpath)-1] = '\0';
 
 	f = fopen( testpath, "rb" );
@@ -652,13 +650,13 @@ fileHandle_t FS_SV_FOpenFileWrite( const char *filename ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
 	}
 
-	ospath = FS_BuildOSPath( fs_homepath->string, filename, "" );
+	ospath = FS_BuildOSPath( fs_homepath->string(), filename, "" );
 	ospath[strlen(ospath)-1] = '\0';
 
 	f = FS_HandleForFile();
 	fsh[f].zipFile = qfalse;
 
-	if ( fs_debug->integer ) {
+	if ( fs_debug->integer() ) {
 		Com_Printf( "FS_SV_FOpenFileWrite: %s\n", ospath );
 	}
 
@@ -702,11 +700,11 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 	S_ClearSoundBuffer();
 
   // search homepath
-	ospath = FS_BuildOSPath( fs_homepath->string, filename, "" );
+	ospath = FS_BuildOSPath( fs_homepath->string(), filename, "" );
 	// remove trailing slash
 	ospath[strlen(ospath)-1] = '\0';
 
-	if ( fs_debug->integer ) {
+	if ( fs_debug->integer() ) {
 		Com_Printf( "FS_SV_FOpenFileRead (fs_homepath): %s\n", ospath );
 	}
 
@@ -715,13 +713,13 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
   if (!fsh[f].handleFiles.file.o)
   {
     // NOTE TTimo on non *nix systems, fs_homepath == fs_basepath, might want to avoid
-    if (Q_stricmp(fs_homepath->string,fs_basepath->string))
+    if (Q_stricmp(fs_homepath->string(),fs_basepath->string()))
     {
       // search basepath
-      ospath = FS_BuildOSPath( fs_basepath->string, filename, "" );
+      ospath = FS_BuildOSPath( fs_basepath->string(), filename, "" );
       ospath[strlen(ospath)-1] = '\0';
 
-      if ( fs_debug->integer )
+      if ( fs_debug->integer() )
       {
         Com_Printf( "FS_SV_FOpenFileRead (fs_basepath): %s\n", ospath );
       }
@@ -738,10 +736,10 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 
 	if (!fsh[f].handleFiles.file.o) {
     // search cd path
-    ospath = FS_BuildOSPath( fs_cdpath->string, filename, "" );
+    ospath = FS_BuildOSPath( fs_cdpath->string(), filename, "" );
     ospath[strlen(ospath)-1] = '\0';
 
-    if (fs_debug->integer)
+    if (fs_debug->integer())
     {
       Com_Printf( "FS_SV_FOpenFileRead (fs_cdpath) : %s\n", ospath );
     }
@@ -778,12 +776,12 @@ void FS_SV_Rename( const char *from, const char *to ) {
 	// don't let sound stutter
 	S_ClearSoundBuffer();
 
-	from_ospath = FS_BuildOSPath( fs_homepath->string, from, "" );
-	to_ospath = FS_BuildOSPath( fs_homepath->string, to, "" );
+	from_ospath = FS_BuildOSPath( fs_homepath->string(), from, "" );
+	to_ospath = FS_BuildOSPath( fs_homepath->string(), to, "" );
 	from_ospath[strlen(from_ospath)-1] = '\0';
 	to_ospath[strlen(to_ospath)-1] = '\0';
 
-	if ( fs_debug->integer ) {
+	if ( fs_debug->integer() ) {
 		Com_Printf( "FS_SV_Rename: %s --> %s\n", from_ospath, to_ospath );
 	}
 
@@ -812,10 +810,10 @@ void FS_Rename( const char *from, const char *to ) {
 	// don't let sound stutter
 	S_ClearSoundBuffer();
 
-	from_ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, from );
-	to_ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, to );
+	from_ospath = FS_BuildOSPath( fs_homepath->string(), fs_gamedir, from );
+	to_ospath = FS_BuildOSPath( fs_homepath->string(), fs_gamedir, to );
 
-	if ( fs_debug->integer ) {
+	if ( fs_debug->integer() ) {
 		Com_Printf( "FS_Rename: %s --> %s\n", from_ospath, to_ospath );
 	}
 
@@ -877,9 +875,9 @@ fileHandle_t FS_FOpenFileWrite( const char *filename ) {
 	f = FS_HandleForFile();
 	fsh[f].zipFile = qfalse;
 
-	ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename );
+	ospath = FS_BuildOSPath( fs_homepath->string(), fs_gamedir, filename );
 
-	if ( fs_debug->integer ) {
+	if ( fs_debug->integer() ) {
 		Com_Printf( "FS_FOpenFileWrite: %s\n", ospath );
 	}
 
@@ -923,9 +921,9 @@ fileHandle_t FS_FOpenFileAppend( const char *filename ) {
 	// don't let sound stutter
 	S_ClearSoundBuffer();
 
-	ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename );
+	ospath = FS_BuildOSPath( fs_homepath->string(), fs_gamedir, filename );
 
-	if ( fs_debug->integer ) {
+	if ( fs_debug->integer() ) {
 		Com_Printf( "FS_FOpenFileAppend: %s\n", ospath );
 	}
 
@@ -1246,7 +1244,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 						unzOpenCurrentFile( fsh[*file].handleFiles.file.z );
 						fsh[*file].zipFilePos = pakFile->pos;
 
-						if ( fs_debug->integer ) {
+						if ( fs_debug->integer() ) {
 							Com_Printf( "FS_FOpenFileRead: %s (found in '%s')\n", 
 								filename, pak->pakFilename );
 						}
@@ -1283,7 +1281,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 		  //   this test can make the search fail although the file is in the directory
 		  // I had the problem on https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=8
 		  // turned out I used FS_FileExists instead
-				if ( fs_restrict->integer || fs_numServerPaks ) {
+				if ( fs_restrict->integer() || fs_numServerPaks ) {
 
 					if ( Q_stricmp( filename + l - 4, ".cfg" )		// for config files
 						&& Q_stricmp( filename + l - 4, ".fcf" )	// force configuration files
@@ -1331,18 +1329,18 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 
 				Q_strncpyz( fsh[*file].name, filename, sizeof( fsh[*file].name ) );
 				fsh[*file].zipFile = qfalse;
-				if ( fs_debug->integer ) {
+				if ( fs_debug->integer() ) {
 					Com_Printf( "FS_FOpenFileRead: %s (found in '%s/%s')\n", filename,
 						dir->path, dir->gamedir );
 				}
 
 				// if we are getting it from the cdpath, optionally copy it
 				//  to the basepath
-				if ( fs_copyfiles->integer && !Q_stricmp( dir->path, fs_cdpath->string ) ) {
+				if ( fs_copyfiles->integer() && !Q_stricmp( dir->path, fs_cdpath->string() ) ) {
 					char	*copypath;
 
-					copypath = FS_BuildOSPath( fs_basepath->string, dir->gamedir, filename );
-					switch ( fs_copyfiles->integer )
+					copypath = FS_BuildOSPath( fs_basepath->string(), dir->gamedir, filename );
+					switch ( fs_copyfiles->integer() )
 					{
 						default:
 						case 1:
@@ -1712,7 +1710,7 @@ int FS_ReadFile( const char *qpath, void **buffer ) {
 #ifndef _XBOX	// VVXXX
 	if ( strstr( qpath, ".cfg" ) ) {
 		isConfig = qtrue;
-		if ( com_journal && com_journal->integer == 2 ) {
+		if ( com_journal && com_journal->integer() == 2 ) {
 			int		r;
 
 			Com_DPrintf( "Loading %s from journal file.\n", qpath );
@@ -1762,7 +1760,7 @@ int FS_ReadFile( const char *qpath, void **buffer ) {
 		}
 		// if we are journalling and it is a config file, write a zero to the journal file
 #ifndef _XBOX	// VVXXX
-		if ( isConfig && com_journal && com_journal->integer == 1 ) {
+		if ( isConfig && com_journal && com_journal->integer() == 1 ) {
 			Com_DPrintf( "Writing zero for %s to journal file.\n", qpath );
 			len = 0;
 			FS_Write( &len, sizeof( len ), com_journalDataFile );
@@ -1774,7 +1772,7 @@ int FS_ReadFile( const char *qpath, void **buffer ) {
 	
 	if ( !buffer ) {
 #ifndef _XBOX	// VVXXX
-		if ( isConfig && com_journal && com_journal->integer == 1 ) {
+		if ( isConfig && com_journal && com_journal->integer() == 1 ) {
 			Com_DPrintf( "Writing len for %s to journal file.\n", qpath );
 			FS_Write( &len, sizeof( len ), com_journalDataFile );
 			FS_Flush( com_journalDataFile );
@@ -1804,7 +1802,7 @@ int FS_ReadFile( const char *qpath, void **buffer ) {
 
 	// if we are journalling and it is a config file, write it to the journal file
 #ifndef _XBOX	// VVXXX
-	if ( isConfig && com_journal && com_journal->integer == 1 ) {
+	if ( isConfig && com_journal && com_journal->integer() == 1 ) {
 		Com_DPrintf( "Writing %s to journal file.\n", qpath );
 		FS_Write( &len, sizeof( len ), com_journalDataFile );
 		FS_Write( buf, len, com_journalDataFile );
@@ -2154,8 +2152,8 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 			char	*name;
 
 			// don't scan directories for files if we are pure or restricted
-			if ( (fs_restrict->integer || fs_numServerPaks) &&
-				 (!extension || Q_stricmp(extension, "fcf") || fs_restrict->integer) )
+			if ( (fs_restrict->integer() || fs_numServerPaks) &&
+				 (!extension || Q_stricmp(extension, "fcf") || fs_restrict->integer()) )
 			{
 				//rww - allow scanning for fcf files outside of pak even if pure
 			    continue;
@@ -2354,9 +2352,9 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
   *listbuf = 0;
   nMods = nPotential = nTotal = 0;
 
-  pFiles0 = Sys_ListFiles( fs_homepath->string, NULL, NULL, &dummy, qtrue );
-  pFiles1 = Sys_ListFiles( fs_basepath->string, NULL, NULL, &dummy, qtrue );
-  pFiles2 = Sys_ListFiles( fs_cdpath->string, NULL, NULL, &dummy, qtrue );
+  pFiles0 = Sys_ListFiles( fs_homepath->string(), NULL, NULL, &dummy, qtrue );
+  pFiles1 = Sys_ListFiles( fs_basepath->string(), NULL, NULL, &dummy, qtrue );
+  pFiles2 = Sys_ListFiles( fs_cdpath->string(), NULL, NULL, &dummy, qtrue );
   // we searched for mods in the three paths
   // it is likely that we have duplicate names now, which we will cleanup below
   pFiles = Sys_ConcatenateFileLists( pFiles0, pFiles1, pFiles2 );
@@ -2387,14 +2385,14 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
       // we didn't keep the information when we merged the directory names, as to what OS Path it was found under
       //   so it could be in base path, cd path or home path
       //   we will try each three of them here (yes, it's a bit messy)
-      path = FS_BuildOSPath( fs_basepath->string, name, "" );
+      path = FS_BuildOSPath( fs_basepath->string(), name, "" );
       nPaks = 0;
       pPaks = Sys_ListFiles(path, ".pk3", NULL, &nPaks, qfalse); 
       Sys_FreeFileList( pPaks ); // we only use Sys_ListFiles to check wether .pk3 files are present
 
       /* Try on cd path */
       if( nPaks <= 0 ) {
-        path = FS_BuildOSPath( fs_cdpath->string, name, "" );
+        path = FS_BuildOSPath( fs_cdpath->string(), name, "" );
         nPaks = 0;
         pPaks = Sys_ListFiles( path, ".pk3", NULL, &nPaks, qfalse );
         Sys_FreeFileList( pPaks );
@@ -2403,7 +2401,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
       /* try on home path */
       if ( nPaks <= 0 )
       {
-        path = FS_BuildOSPath( fs_homepath->string, name, "" );
+        path = FS_BuildOSPath( fs_homepath->string(), name, "" );
         nPaks = 0;
         pPaks = Sys_ListFiles( path, ".pk3", NULL, &nPaks, qfalse );
         Sys_FreeFileList( pPaks );
@@ -2460,24 +2458,24 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 FS_Dir_f
 ================
 */
-void FS_Dir_f( void ) {
+void FS_Dir_f(CommandArgs& args) {
 	const char	*path;
 	const char	*extension;
 	char	**dirnames;
 	int		ndirs;
 	int		i;
 
-	if ( Cmd_Argc() < 2 || Cmd_Argc() > 3 ) {
+	if ( args.Argc() < 2 || args.Argc() > 3 ) {
 		Com_Printf( "usage: dir <directory> [extension]\n" );
 		return;
 	}
 
-	if ( Cmd_Argc() == 2 ) {
-		path = Cmd_Argv( 1 );
+	if ( args.Argc() == 2 ) {
+		path = args.Argv( 1 );
 		extension = "";
 	} else {
-		path = Cmd_Argv( 1 );
-		extension = Cmd_Argv( 2 );
+		path = args.Argv( 1 );
+		extension = args.Argv( 2 );
 	}
 
 	Com_Printf( "Directory of %s %s\n", path, extension );
@@ -2577,19 +2575,19 @@ void FS_SortFileList(char **filelist, int numfiles) {
 FS_NewDir_f
 ================
 */
-void FS_NewDir_f( void ) {
+void FS_NewDir_f(CommandArgs& args) {
 	const char	*filter;
 	char	**dirnames;
 	int		ndirs;
 	int		i;
 
-	if ( Cmd_Argc() < 2 ) {
+	if ( args.Argc() < 2 ) {
 		Com_Printf( "usage: fdir <filter>\n" );
 		Com_Printf( "example: fdir *q3dm*.bsp\n");
 		return;
 	}
 
-	filter = Cmd_Argv( 1 );
+	filter = args.Argv( 1 );
 
 	Com_Printf( "---------------\n" );
 
@@ -2648,15 +2646,15 @@ The only purpose of this function is to allow game script files to copy
 arbitrary files furing an "fs_copyfiles 1" run.
 ============
 */
-void FS_TouchFile_f( void ) {
+void FS_TouchFile_f(CommandArgs& args) {
 	fileHandle_t	f;
 
-	if ( Cmd_Argc() != 2 ) {
+	if ( args.Argc() != 2 ) {
 		Com_Printf( "Usage: touchFile <file>\n" );
 		return;
 	}
 
-	FS_FOpenFileRead( Cmd_Argv( 1 ), &f, qfalse );
+	FS_FOpenFileRead( args.Argv( 1 ), &f, qfalse );
 	if ( f ) {
 		FS_FCloseFile( f );
 	}
@@ -2744,7 +2742,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		search = (searchpath_s *)Z_Malloc (sizeof(searchpath_t), TAG_FILESYS, qtrue);
 		search->pack = pak;
 
-		if (fs_dirbeforepak && fs_dirbeforepak->integer && thedir)
+		if (fs_dirbeforepak && fs_dirbeforepak->integer() && thedir)
 		{
 			searchpath_t *oldnext = thedir->next;
 			thedir->next = search;
@@ -2889,7 +2887,7 @@ FS_Shutdown
 Frees all resources and closes all files
 ================
 */
-void FS_Shutdown( qboolean closemfp ) {
+void FS_Shutdown(CommandSystem& cmd, qboolean closemfp) {
 	searchpath_t	*p, *next;
 	int	i;
 
@@ -2917,10 +2915,10 @@ void FS_Shutdown( qboolean closemfp ) {
 	// any FS_ calls will now be an error until reinitialized
 	fs_searchpaths = NULL;
 
-	Cmd_RemoveCommand( "path" );
-	Cmd_RemoveCommand( "dir" );
-	Cmd_RemoveCommand( "fdir" );
-	Cmd_RemoveCommand( "touchFile" );
+	cmd.RemoveCommand( "path" );
+	cmd.RemoveCommand( "dir" );
+	cmd.RemoveCommand( "fdir" );
+	cmd.RemoveCommand( "touchFile" );
 
 #ifdef FS_MISSING
 	if (closemfp) {
@@ -2939,19 +2937,19 @@ void Com_ReadCDKey( const char *filename );
 //rww - add search paths in for received svc_setgame
 void FS_UpdateGamedir(void)
 {
-	if ( fs_gamedirvar->string[0] && Q_stricmp( fs_gamedirvar->string, BASEGAME ) )
+	if ( fs_gamedirvar->string()[0] && Q_stricmp( fs_gamedirvar->string(), BASEGAME ) )
 	{
-		if (fs_cdpath->string[0])
+		if (fs_cdpath->string()[0])
 		{
-			FS_AddGameDirectory(fs_cdpath->string, fs_gamedirvar->string);
+			FS_AddGameDirectory(fs_cdpath->string(), fs_gamedirvar->string());
 		}
-		if (fs_basepath->string[0])
+		if (fs_basepath->string()[0])
 		{
-			FS_AddGameDirectory(fs_basepath->string, fs_gamedirvar->string);
+			FS_AddGameDirectory(fs_basepath->string(), fs_gamedirvar->string());
 		}
-		if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string))
+		if (fs_homepath->string()[0] && Q_stricmp(fs_homepath->string(),fs_basepath->string()))
 		{
-			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
+			FS_AddGameDirectory(fs_homepath->string(), fs_gamedirvar->string());
 		}
 	}
 }
@@ -2961,7 +2959,7 @@ void FS_UpdateGamedir(void)
 FS_Startup
 ================
 */
-static void FS_Startup( const char *gameName ) {
+static void FS_Startup(CommandSystem& cmd, CvarSystem& cvars, const char *gameName) {
         const char *homePath;
 #ifdef USE_CD_KEY
 	cvar_t	*fs;
@@ -2969,57 +2967,57 @@ static void FS_Startup( const char *gameName ) {
 
 	Com_Printf( "----- FS_Startup -----\n" );
 
-	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
-	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
-	fs_cdpath = Cvar_Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT );
-	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT );
-	fs_basegame = Cvar_Get ("fs_basegame", "", CVAR_INIT );
+	fs_debug = cvars.Get( "fs_debug", "0", 0 );
+	fs_copyfiles = cvars.Get( "fs_copyfiles", "0", CVAR_INIT );
+	fs_cdpath = cvars.Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT );
+	fs_basepath = cvars.Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT );
+	fs_basegame = cvars.Get ("fs_basegame", "", CVAR_INIT );
   homePath = Sys_DefaultHomePath();
   if (!homePath || !homePath[0]) {
-		homePath = fs_basepath->string;
+		homePath = fs_basepath->string();
 	}
-	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT );
-	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	fs_restrict = Cvar_Get ("fs_restrict", "", CVAR_INIT );
+	fs_homepath = cvars.Get ("fs_homepath", homePath, CVAR_INIT );
+	fs_gamedirvar = cvars.Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
+	fs_restrict = cvars.Get ("fs_restrict", "", CVAR_INIT );
 
-	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT);
+	fs_dirbeforepak = cvars.Get("fs_dirbeforepak", "0", CVAR_INIT);
 
 	// add search path elements in reverse priority order
-	if (fs_cdpath->string[0]) {
-		FS_AddGameDirectory( fs_cdpath->string, gameName );
+	if (fs_cdpath->string()[0]) {
+		FS_AddGameDirectory( fs_cdpath->string(), gameName );
 	}
-	if (fs_basepath->string[0]) {
-		FS_AddGameDirectory( fs_basepath->string, gameName );
+	if (fs_basepath->string()[0]) {
+		FS_AddGameDirectory( fs_basepath->string(), gameName );
 	}
   // fs_homepath is somewhat particular to *nix systems, only add if relevant
   // NOTE: same filtering below for mods and basegame
-	if (fs_basepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
-		FS_AddGameDirectory ( fs_homepath->string, gameName );
+	if (fs_basepath->string()[0] && Q_stricmp(fs_homepath->string(),fs_basepath->string())) {
+		FS_AddGameDirectory ( fs_homepath->string(), gameName );
 	}
         
 	// check for additional base game so mods can be based upon other mods
-	if ( fs_basegame->string[0] && !Q_stricmp( gameName, BASEGAME ) && Q_stricmp( fs_basegame->string, gameName ) ) {
-		if (fs_cdpath->string[0]) {
-			FS_AddGameDirectory(fs_cdpath->string, fs_basegame->string);
+	if ( fs_basegame->string()[0] && !Q_stricmp( gameName, BASEGAME ) && Q_stricmp( fs_basegame->string(), gameName ) ) {
+		if (fs_cdpath->string()[0]) {
+			FS_AddGameDirectory(fs_cdpath->string(), fs_basegame->string());
 		}
-		if (fs_basepath->string[0]) {
-			FS_AddGameDirectory(fs_basepath->string, fs_basegame->string);
+		if (fs_basepath->string()[0]) {
+			FS_AddGameDirectory(fs_basepath->string(), fs_basegame->string());
 		}
-		if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
-			FS_AddGameDirectory(fs_homepath->string, fs_basegame->string);
+		if (fs_homepath->string()[0] && Q_stricmp(fs_homepath->string(),fs_basepath->string())) {
+			FS_AddGameDirectory(fs_homepath->string(), fs_basegame->string());
 		}
 	}
 
 	// check for additional game folder for mods
-	if ( fs_gamedirvar->string[0] && !Q_stricmp( gameName, BASEGAME ) && Q_stricmp( fs_gamedirvar->string, gameName ) ) {
-		if (fs_cdpath->string[0]) {
-			FS_AddGameDirectory(fs_cdpath->string, fs_gamedirvar->string);
+	if ( fs_gamedirvar->string()[0] && !Q_stricmp( gameName, BASEGAME ) && Q_stricmp( fs_gamedirvar->string(), gameName ) ) {
+		if (fs_cdpath->string()[0]) {
+			FS_AddGameDirectory(fs_cdpath->string(), fs_gamedirvar->string());
 		}
-		if (fs_basepath->string[0]) {
-			FS_AddGameDirectory(fs_basepath->string, fs_gamedirvar->string);
+		if (fs_basepath->string()[0]) {
+			FS_AddGameDirectory(fs_basepath->string(), fs_gamedirvar->string());
 		}
-		if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
-			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
+		if (fs_homepath->string()[0] && Q_stricmp(fs_homepath->string(),fs_basepath->string())) {
+			FS_AddGameDirectory(fs_homepath->string(), fs_gamedirvar->string());
 		}
 	}
 
@@ -3032,15 +3030,17 @@ static void FS_Startup( const char *gameName ) {
 #endif // USE_CD_KEY
 
 	// add our commands
-	Cmd_AddCommand ("path", FS_Path_f);
-	Cmd_AddCommand ("dir", FS_Dir_f );
-	Cmd_AddCommand ("fdir", FS_NewDir_f );
-	Cmd_AddCommand ("touchFile", FS_TouchFile_f );
+	cmd.AddCommand("path", [](auto& args) {
+		FS_Path_f();
+	});
+	cmd.AddCommand("dir", FS_Dir_f );
+	cmd.AddCommand("fdir", FS_NewDir_f );
+	cmd.AddCommand("touchFile", FS_TouchFile_f );
 
 	// print the current search paths
 	FS_Path_f();
 
-	fs_gamedirvar->modified = qfalse; // We just loaded, it's not modified
+	fs_gamedirvar->setModified(false); // We just loaded, it's not modified
 
 	Com_Printf( "----------------------\n" );
 
@@ -3061,7 +3061,7 @@ Looks for product keys and restricts media add on ability
 if the full version is not found
 ===================
 */
-static void FS_SetRestrictions( void ) {
+static void FS_SetRestrictions(CommandSystem& cmd, CvarSystem& cvars) {
 	searchpath_t	*path;
 
 #ifndef PRE_RELEASE_DEMO
@@ -3070,7 +3070,7 @@ static void FS_SetRestrictions( void ) {
 	// if fs_restrict is set, don't even look for the id file,
 	// which allows the demo release to be tested even if
 	// the full game is present
-	if ( !fs_restrict->integer ) {
+	if ( !fs_restrict->integer() ) {
 		// look for the full game id
 		FS_ReadFile( "productid.txt", (void **)&productId );
 		if ( productId ) {
@@ -3094,13 +3094,13 @@ static void FS_SetRestrictions( void ) {
 		}
 	}
 #endif
-	Cvar_Set( "fs_restrict", "1" );
+	cvars.Set( "fs_restrict", "1" );
 
 	Com_Printf( "\nRunning in restricted demo mode.\n\n" );
 
 	// restart the filesystem with just the demo directory
-	FS_Shutdown(qfalse);
-	FS_Startup( DEMOGAME );
+	FS_Shutdown(cmd, qfalse);
+	FS_Startup(cmd, cvars, DEMOGAME);
 
 	// make sure that the pak file has the header checksum we expect
 	for ( path = fs_searchpaths ; path ; path = path->next ) {
@@ -3364,9 +3364,9 @@ exception of .cfg and .dat files.
 void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 	int		i, c, d;
 
-	Cmd_TokenizeString( pakSums );
+	auto args = CommandArgs::TokenizeString( pakSums );
 
-	c = Cmd_Argc();
+	c = args.Argc();
 	if ( c > MAX_SEARCH_PATHS ) {
 		c = MAX_SEARCH_PATHS;
 	}
@@ -3374,7 +3374,7 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 	fs_numServerPaks = c;
 
 	for ( i = 0 ; i < c ; i++ ) {
-		fs_serverPaks[i] = atoi( Cmd_Argv( i ) );
+		fs_serverPaks[i] = atoi( args.Argv( i ) );
 	}
 
 	if (fs_numServerPaks) {
@@ -3388,15 +3388,15 @@ void FS_PureServerSetLoadedPaks( const char *pakSums, const char *pakNames ) {
 		fs_serverPakNames[i] = NULL;
 	}
 	if ( pakNames && *pakNames ) {
-		Cmd_TokenizeString( pakNames );
+		auto args = CommandArgs::TokenizeString( pakNames );
 
-		d = Cmd_Argc();
+		d = args.Argc();
 		if ( d > MAX_SEARCH_PATHS ) {
 			d = MAX_SEARCH_PATHS;
 		}
 
 		for ( i = 0 ; i < d ; i++ ) {
-			fs_serverPakNames[i] = CopyString( Cmd_Argv( i ) );
+			fs_serverPakNames[i] = CopyString( args.Argv( i ) );
 		}
 	}
 }
@@ -3413,9 +3413,9 @@ checksums to see if any pk3 files need to be auto-downloaded.
 void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames ) {
 	int		i, c, d;
 
-	Cmd_TokenizeString( pakSums );
+	auto args = CommandArgs::TokenizeString( pakSums );
 
-	c = Cmd_Argc();
+	c = args.Argc();
 	if ( c > MAX_SEARCH_PATHS ) {
 		c = MAX_SEARCH_PATHS;
 	}
@@ -3423,7 +3423,7 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 	fs_numServerReferencedPaks = c;
 
 	for ( i = 0 ; i < c ; i++ ) {
-		fs_serverReferencedPaks[i] = atoi( Cmd_Argv( i ) );
+		fs_serverReferencedPaks[i] = atoi( args.Argv( i ) );
 	}
 
 	for ( i = 0 ; i < c ; i++ ) {
@@ -3433,15 +3433,15 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 		fs_serverReferencedPakNames[i] = NULL;
 	}
 	if ( pakNames && *pakNames ) {
-		Cmd_TokenizeString( pakNames );
+		auto args = CommandArgs::TokenizeString( pakNames );
 
-		d = Cmd_Argc();
+		d = args.Argc();
 		if ( d > MAX_SEARCH_PATHS ) {
 			d = MAX_SEARCH_PATHS;
 		}
 
 		for ( i = 0 ; i < d ; i++ ) {
-			fs_serverReferencedPakNames[i] = CopyString( Cmd_Argv( i ) );
+			fs_serverReferencedPakNames[i] = CopyString( args.Argv( i ) );
 		}
 	}
 }
@@ -3454,23 +3454,23 @@ Called only at inital startup, not when the filesystem
 is resetting due to a game change
 ================
 */
-void FS_InitFilesystem(CommandLine& cli) {
+void FS_InitFilesystem(CommandSystem& cmd, CvarSystem& cvars, CommandLine& cli) {
 	// allow command line parms to override our defaults
 	// we have to specially handle this, because normal command
 	// line variable sets don't happen until after the filesystem
 	// has already been initialized
-	cli.StartupVariable( "fs_cdpath" );
-	cli.StartupVariable( "fs_basepath" );
-	cli.StartupVariable( "fs_homepath" );
-	cli.StartupVariable( "fs_game" );
-	cli.StartupVariable( "fs_copyfiles" );
-	cli.StartupVariable( "fs_restrict" );
+	cli.StartupVariable("fs_cdpath");
+	cli.StartupVariable("fs_basepath");
+	cli.StartupVariable("fs_homepath");
+	cli.StartupVariable("fs_game");
+	cli.StartupVariable("fs_copyfiles");
+	cli.StartupVariable("fs_restrict");
 
 	// try to start up normally
-	FS_Startup( BASEGAME );
+	FS_Startup(cmd, cvars, BASEGAME);
 
 	// see if we are going to allow add-ons
-	FS_SetRestrictions();
+	FS_SetRestrictions(cmd, cvars);
 
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
@@ -3480,8 +3480,8 @@ void FS_InitFilesystem(CommandLine& cli) {
 		// bk001208 - SafeMode see below, FIXME?
 	}
 
-	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
-	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
+	Q_strncpyz(lastValidBase, fs_basepath->string(), sizeof(lastValidBase));
+	Q_strncpyz(lastValidGame, fs_gamedirvar->string(), sizeof(lastValidGame));
 
   // bk001208 - SafeMode see below, FIXME?
 }
@@ -3492,10 +3492,10 @@ void FS_InitFilesystem(CommandLine& cli) {
 FS_Restart
 ================
 */
-void FS_Restart(CommandLine& cli, int checksumFeed) {
+void FS_Restart(CommandSystem& cmd, CvarSystem& cvars, CommandBuffer& cbuf, CommandLine& cli, int checksumFeed) {
 
 	// free anything we currently have loaded
-	FS_Shutdown(qfalse);
+	FS_Shutdown(cmd, qfalse);
 
 	// set the checksum feed
 	fs_checksumFeed = checksumFeed;
@@ -3504,10 +3504,10 @@ void FS_Restart(CommandLine& cli, int checksumFeed) {
 	FS_ClearPakReferences(0);
 
 	// try to start up normally
-	FS_Startup( BASEGAME );
+	FS_Startup(cmd, cvars, BASEGAME);
 
 	// see if we are going to allow add-ons
-	FS_SetRestrictions();
+	FS_SetRestrictions(cmd, cvars);
 
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
@@ -3517,12 +3517,12 @@ void FS_Restart(CommandLine& cli, int checksumFeed) {
 		// (for instance a TA demo server)
 		if (lastValidBase[0]) {
 			FS_PureServerSetLoadedPaks("", "");
-			Cvar_Set("fs_basepath", lastValidBase);
-			Cvar_Set("fs_gamedirvar", lastValidGame);
+			cvars.Set("fs_basepath", lastValidBase);
+			cvars.Set("fs_gamedirvar", lastValidGame);
 			lastValidBase[0] = '\0';
 			lastValidGame[0] = '\0';
-			Cvar_Set( "fs_restrict", "0" );
-			FS_Restart(checksumFeed);
+			cvars.Set( "fs_restrict", "0" );
+			FS_Restart(cmd, cvars, cbuf, cli, checksumFeed);
 			Com_Error( ERR_DROP, "Invalid game folder\n" );
 			return;
 		}
@@ -3530,19 +3530,19 @@ void FS_Restart(CommandLine& cli, int checksumFeed) {
 	}
 
 	// bk010116 - new check before safeMode
-	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
+	if ( Q_stricmp(fs_gamedirvar->string(), lastValidGame) ) {
 		// skip the jk2mpconfig.cfg if "safe" is on the command line
 		if ( !cli.SafeMode() ) {
 #ifdef DEDICATED
-			Cbuf_AddText ("exec jk2mpserver.cfg\n");
+			cbuf.AddText ("exec jk2mpserver.cfg\n");
 #else
-			Cbuf_AddText ("exec jk2mpconfig.cfg\n");
+			cbuf.AddText ("exec jk2mpconfig.cfg\n");
 #endif
 		}
 	}
 
-	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
-	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
+	Q_strncpyz(lastValidBase, fs_basepath->string(), sizeof(lastValidBase));
+	Q_strncpyz(lastValidGame, fs_gamedirvar->string(), sizeof(lastValidGame));
 
 }
 
@@ -3552,9 +3552,9 @@ FS_ConditionalRestart
 restart if necessary
 =================
 */
-qboolean FS_ConditionalRestart( int checksumFeed ) {
-	if( fs_gamedirvar->modified || checksumFeed != fs_checksumFeed ) {
-		FS_Restart( checksumFeed );
+qboolean FS_ConditionalRestart(CommandSystem& cmd, CvarSystem& cvars, CommandBuffer& cbuf, CommandLine& cli, int checksumFeed ) {
+	if( fs_gamedirvar->modified() || checksumFeed != fs_checksumFeed ) {
+		FS_Restart(cmd, cvars, cbuf, cli, checksumFeed);
 		return qtrue;
 	}
 	return qfalse;

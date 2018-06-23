@@ -1,6 +1,7 @@
 #include <cstring>
 #include "CvarSystem.h"
 #include "com.h"
+#include "fs.h"
 
 static bool Cvar_ValidateString(const char *s) {
 	if (!s) return false;
@@ -222,6 +223,7 @@ void CvarSystem::Register(vmCvar_t *vmCvar, const char *varName, const char *def
 	if (!vmCvar) {
 		return;
 	}
+	static_assert(sizeof(int) == sizeof(void*));
 	vmCvar->handle = (int) std::addressof(cv);
 	vmCvar->modificationCount = -1;
 	Update(vmCvar);
@@ -254,15 +256,61 @@ void CvarSystem::Update(vmCvar_t *vmCvar) {
 	vmCvar->integer = cv->integer();
 }
 
-void CvarSystem::CvarIter(void (*callback)(Cvar& cvar)) {
-	for (auto& pair : m_table) {
-		auto& cvar = pair.second;
-		// Dont show internal cvars
-		if (cvar.flags() & CVAR_INTERNAL) continue;
-		callback(cvar);
+std::size_t CvarSystem::size() const {
+	return m_table.size();
+}
+
+void CvarSystem::Restart() {
+	for (auto it = m_table.begin(); it != m_table.end(); it++) {
+		Cvar& cvar = it->second;
+		// don't mess with rom values, or some inter-module
+		// communication will get broken (com_cl_running, etc)
+		if (cvar.flags() & (CVAR_ROM | CVAR_INIT | CVAR_NORESTART)) {
+			continue;
+		}
+		// throw out any variables the user created
+		if (cvar.flags() & CVAR_USER_CREATED) {
+			m_table.erase(it);
+			continue;
+		}
+		Set(cvar.name(), cvar.resetString());
 	}
 }
 
-std::size_t CvarSystem::size() const {
-	return m_table.size();
+void CvarSystem::Reset(const char *var_name) {
+	Set2(var_name, NULL, qfalse);
+}
+
+void CvarSystem::removeModifiedFlags(int flags) {
+	cvar_modifiedFlags &= ~flags;
+}
+
+bool CvarSystem::hasModifiedFlags(int flags) const {
+	return cvar_modifiedFlags & flags;
+}
+
+/*
+ * Appends lines containing "set variable value" for all variables
+ * with the archive flag set to qtrue.
+*/
+void CvarSystem::WriteVariables(fileHandle_t f) {
+	char	buffer[1024];
+
+	for (auto& pair : m_table) {
+		Cvar& var = pair.second;
+#ifdef USE_CD_KEY
+		if (Q_stricmp(var.name(), "cl_cdkey" ) == 0) {
+			continue;
+		}
+#endif // USE_CD_KEY
+		if (var.has_flag(CVAR_ARCHIVE)) {
+			// write the latched value, even if it hasn't taken effect yet
+			if (!var.m_latchedString.empty()) {
+				Com_sprintf(buffer, sizeof(buffer), "seta %s \"%s\"\n", var.name(), var.latchedString());
+			} else {
+				Com_sprintf(buffer, sizeof(buffer), "seta %s \"%s\"\n", var.name(), var.string());
+			}
+			FS_Printf(f, "%s", buffer);
+		}
+	}
 }

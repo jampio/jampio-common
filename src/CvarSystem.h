@@ -26,7 +26,6 @@ public:
 	const char *VariableString(const char *name);
 	void VariableStringBuffer(const char *name, char *buffer, int bufsize);
 	void CommandCompletion(void (*callback)(const char *cvar_name));
-	void CvarIter(void (*callback)(Cvar&));
 	// If the variable already exists, the value will not be set unless CVAR_ROM
 	// The flags will be or'ed in if the variable exists.
 	Cvar &Get(const char *name, const char *value, int flags);
@@ -39,5 +38,19 @@ public:
 	bool Command(CommandArgs& args);
 	void Register(vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags);
 	void Update(vmCvar_t *vmCvar);
-	std::size_t size() const; 
+	std::size_t size() const;
+	void removeModifiedFlags(int flags);
+	bool hasModifiedFlags(int flags) const;
+	void WriteVariables(fileHandle_t f);
+	// Resets all cvars to their hardcoded values
+	void Restart();
+	template <typename F>
+	void CvarIter(F&& f) {
+		for (auto& pair : m_table) {
+			auto& cvar = pair.second;
+			// Dont show internal cvars
+			if (cvar.flags() & CVAR_INTERNAL) continue;
+			f(cvar);
+		}
+	}
 };

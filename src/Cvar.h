@@ -24,6 +24,7 @@ public:
 	const char *latchedString() const;
 	int flags() const;
 	bool modified() const;
+	void setModified(bool value);
 	int modificationCount() const;
 	float value() const;
 	int integer() const;
