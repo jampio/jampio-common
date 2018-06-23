@@ -332,7 +332,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
 	}
 
-	Com_Shutdown ();
+	Com_Shutdown (*m_cvars);
 
 	Sys_Error ("%s", com_errorMessage);
 }
@@ -346,12 +346,12 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-void Com_Quit_f(CommandSystem& cmd, CommandArgs& args) {
+void Com_Quit_f(CvarSystem& cvars, CommandSystem& cmd, CommandArgs& args) {
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		SV_Shutdown ("Server quit\n");
 		CL_Shutdown ();
-		Com_Shutdown ();
+		Com_Shutdown (cvars);
 		FS_Shutdown(cmd, qtrue);
 	}
 	Sys_Quit ();
@@ -1431,7 +1431,7 @@ void Com_Init(CvarSystem& cvars, CommandLine& cli, CommandBuffer& cbuf, CommandS
 			cmd.AddCommand("freeze", Com_Freeze_f);
 		}
 		cmd.AddCommand("quit", [&](auto& args) {
-			Com_Quit_f(cmd, args);
+			Com_Quit_f(cvars, cmd, args);
 		});
 		cmd.AddCommand("changeVectors", [](auto& args) {
 			MSG_ReportChangeVectors_f();
