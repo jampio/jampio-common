@@ -27,5 +27,5 @@ void Com_Init(CvarSystem& cvars, CommandLine& cli, CommandBuffer& cbuf, CommandS
 void Com_Frame(CvarSystem& cvars, CommandBuffer& cbuf);
 void Com_Shutdown(CvarSystem& cvars);
 bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
+//CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
 void Com_ParseTextFileDestroy(class CGenericParser2 &parser);

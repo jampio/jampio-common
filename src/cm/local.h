@@ -4,6 +4,7 @@
 #include "cm.h"
 #include "polylib.h"
 #include "landscape.h"
+#include "../Cvar.h"
 
 #ifdef _XBOX
 #include "sparc.h"
@@ -217,12 +218,12 @@ typedef struct {
 // and to avoid various numeric issues
 #define	SURFACE_CLIP_EPSILON	(0.125)
 
-extern	clipMap_t	cmg; //rwwRMG - changed from cm
-extern	int			c_pointcontents;
-extern	int			c_traces, c_brush_traces, c_patch_traces;
-extern	cvar_t		*cm_noAreas;
-extern	cvar_t		*cm_noCurves;
-extern	cvar_t		*cm_playerCurveClip;
+extern clipMap_t cmg; //rwwRMG - changed from cm
+extern int c_pointcontents;
+extern int c_traces, c_brush_traces, c_patch_traces;
+extern Cvar *cm_noAreas;
+extern Cvar *cm_noCurves;
+extern Cvar *cm_playerCurveClip;
 
 // cm_test.c
 

@@ -3,6 +3,7 @@
 #include "../../g2/mdx.h"
 #include "modtype.h"
 #include "bmodel.h"
+#include "../../filefmt.h" /* for md3Header_t */
 
 typedef struct model_s {
 	char		name[MAX_QPATH];

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "sys.h"
 
 // jampio - current implementation depends on x86 specific rdtsc instruction
 // the end results are not actually used by any current modules

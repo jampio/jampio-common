@@ -113,3 +113,25 @@ const char *CommandArgs::Argv(int arg) const {
 	}
 	return cmd_argv[arg];	
 }
+
+/*
+ * Returns a single string containing argv(1) to argv(argc()-1)
+ */
+std::array<char, MAX_STRING_CHARS> CommandArgs::Args() const {
+	std::array<char, MAX_STRING_CHARS> cmd_args;
+	int		i;
+
+	cmd_args[0] = 0;
+	for ( i = 1 ; i < cmd_argc ; i++ ) {
+		strcat( cmd_args.data(), cmd_argv[i] );
+		if ( i != cmd_argc-1 ) {
+			strcat( cmd_args.data(), " " );
+		}
+	}
+
+	return cmd_args;
+}
+
+void CommandArgs::ArgvBuffer(int arg, char *buffer, int bufferLength) {
+	Q_strncpyz(buffer, Argv(arg), bufferLength);
+}

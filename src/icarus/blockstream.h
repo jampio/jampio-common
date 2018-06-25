@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdio>
 #include "memory.h"
+#include "../memory.h"
 
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions
 #define IBI_HEADER_ID	"IBI"

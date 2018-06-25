@@ -1,6 +1,7 @@
 #pragma once
 
 #include <jampio/shared/shared.h>
+#include <array>
 
 class CommandArgs {
 private:
@@ -17,4 +18,6 @@ public:
 	static CommandArgs TokenizeString(const char *text);
 	int Argc() const;
 	const char *Argv(int arg) const;
+	void ArgvBuffer(int arg, char *buffer, int bufferLength);
+	std::array<char, MAX_STRING_CHARS> Args() const;
 };

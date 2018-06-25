@@ -5,6 +5,7 @@
 #include <string>
 #include <optional>
 #include <functional>
+#include <array>
 #include "Cvar.h"
 #include "CommandArgs.h"
 
@@ -44,6 +45,8 @@ public:
 	void WriteVariables(fileHandle_t f);
 	// Resets all cvars to their hardcoded values
 	void Restart();
+	std::array<char, MAX_INFO_STRING> InfoString(int bit);
+	std::array<char, BIG_INFO_STRING> InfoStringBig(int bit);
 	template <typename F>
 	void CvarIter(F&& f) {
 		for (auto& pair : m_table) {

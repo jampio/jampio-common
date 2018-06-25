@@ -15,7 +15,7 @@ message(STATUS "  in path: " ${ZIP_LIBDIR})
 pkg_check_modules(MINIZIP minizip REQUIRED)
 message(STATUS "  in path: " ${MINIZIP_LIBDIR})
 set(SOURCES
-	# src/cm/load.cpp
+	src/cm/load.cpp
 	src/cmd_init.cpp
 	src/cvar_init.cpp
 	src/CommandArgs.cpp
@@ -26,6 +26,7 @@ set(SOURCES
 	src/Cvar.cpp
 	src/CvarSystem.cpp
 	src/fs.cpp
+	src/VM.cpp
 )
 add_library(jampiocommonpc STATIC ${SOURCES})
 add_library(jampiocommonded STATIC ${SOURCES})

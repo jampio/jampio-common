@@ -314,3 +314,33 @@ void CvarSystem::WriteVariables(fileHandle_t f) {
 		}
 	}
 }
+
+std::array<char, MAX_INFO_STRING> CvarSystem::InfoString(int bit) {
+	std::array<char, MAX_INFO_STRING> info;
+
+	info[0] = 0;
+
+	for (auto& pair : m_table) {
+		Cvar& var = pair.second;
+		if (!(var.flags() & CVAR_INTERNAL) && (var.flags() & bit)) {
+			Info_SetValueForKey(info.data(), var.name(), var.string());
+		}
+	}
+
+	return info;
+}
+
+std::array<char, BIG_INFO_STRING> CvarSystem::InfoStringBig(int bit) {
+	std::array<char, BIG_INFO_STRING> info;
+
+	info[0] = 0;
+
+	for (auto& pair : m_table) {
+		Cvar& var = pair.second;
+		if (!(var.flags() & CVAR_INTERNAL) && (var.flags() & bit)) {
+			Info_SetValueForKey_Big(info.data(), var.name(), var.string());
+		}
+	}
+
+	return info;
+}

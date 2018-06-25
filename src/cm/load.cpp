@@ -3,7 +3,6 @@
 #include "local.h"
 #include "../rmg/manager.h"
 #include "../fs.h"
-#include "../cvar.h"
 #include "../memory.h"
 #include "../sys.h"
 #include "../com_vars.h"
@@ -44,9 +43,9 @@ int			c_traces, c_brush_traces, c_patch_traces;
 byte		*cmod_base;
 
 #ifndef BSPC
-cvar_t		*cm_noAreas;
-cvar_t		*cm_noCurves;
-cvar_t		*cm_playerCurveClip;
+Cvar *cm_noAreas;
+Cvar *cm_noCurves;
+Cvar *cm_playerCurveClip;
 #endif
 
 cmodel_t	box_model;
@@ -604,7 +603,7 @@ qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete)
 
 
 
-static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *checksum, clipMap_t &cm )
+static void CM_LoadMap_Actual(CvarSystem& cvars, const char *name, qboolean clientload, int *checksum, clipMap_t &cm)
 { //rwwRMG - function needs heavy modification
 	int				*buf;
 	int				i;
@@ -618,9 +617,9 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	}
 
 #ifndef BSPC
-	cm_noAreas = Cvar_Get ("cm_noAreas", "0", CVAR_CHEAT);
-	cm_noCurves = Cvar_Get ("cm_noCurves", "0", CVAR_CHEAT);
-	cm_playerCurveClip = Cvar_Get ("cm_playerCurveClip", "1", CVAR_ARCHIVE|CVAR_CHEAT );
+	cm_noAreas = cvars.Get ("cm_noAreas", "0", CVAR_CHEAT);
+	cm_noCurves = cvars.Get ("cm_noCurves", "0", CVAR_CHEAT);
+	cm_playerCurveClip = cvars.Get ("cm_playerCurveClip", "1", CVAR_ARCHIVE|CVAR_CHEAT );
 #endif
 	Com_DPrintf( "CM_LoadMap( %s, %i )\n", name, clientload );
 
@@ -747,7 +746,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	//	map data will have been Little-Long'd, but some hasn't).
 	//
 	if (Sys_LowPhysicalMemory() 
-		|| com_dedicated->integer
+		|| com_dedicated->integer()
 //		|| we're on a big-endian machine
 		)
 	{
@@ -774,11 +773,11 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 
 // need a wrapper function around this because of multiple returns, need to ensure bool is correct...
 //
-void CM_LoadMap( const char *name, qboolean clientload, int *checksum )
+void CM_LoadMap(CvarSystem& cvars, const char *name, qboolean clientload, int *checksum)
 {
 	gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!!!!!!!
 
-		CM_LoadMap_Actual( name, clientload, checksum, cmg );
+	CM_LoadMap_Actual(cvars, name, clientload, checksum, cmg);
 
 	gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!!!!!!!
 }
@@ -1082,7 +1081,7 @@ void CM_ShutdownTerrain( thandle_t terrainId)
 }
 #endif
 
-int CM_LoadSubBSP(const char *name, qboolean clientload)
+int CM_LoadSubBSP(CvarSystem& cvars, const char *name, qboolean clientload)
 {
 	int		i;
 	int		checksum;
@@ -1103,7 +1102,7 @@ int CM_LoadSubBSP(const char *name, qboolean clientload)
 		Com_Error (ERR_DROP, "CM_LoadSubBSP: too many unique sub BSPs");
 	}
 
-	CM_LoadMap_Actual(name, clientload, &checksum, SubBSP[NumSubBSP] );
+	CM_LoadMap_Actual(cvars, name, clientload, &checksum, SubBSP[NumSubBSP]);
 	NumSubBSP++;
 
 	return count;

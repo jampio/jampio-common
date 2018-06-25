@@ -1,7 +1,8 @@
 #pragma once
 
 #include <map>
-#include "../common.h"
+#include <jampio/shared/shared.h>
+#include "../memory.h"
 
 #ifdef _G2_GORE
 

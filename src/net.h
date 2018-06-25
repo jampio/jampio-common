@@ -8,6 +8,7 @@ NET
 */
 #include <jampio/shared/shared.h>
 #include "netadr.h"
+#include "msgtype.h"
 
 constexpr auto PACKET_BACKUP = 32;  // number of old messages that must be kept on client and
                                    // server for delta comrpession and ping estimation

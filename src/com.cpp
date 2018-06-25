@@ -10,7 +10,7 @@
 #include "memory.h"
 #include "net.h"
 #include "msg.h"
-#include "vm.h"
+#include "VM.h"
 #include "cm/cm.h"
 #include "CvarSystem.h"
 #include "cvar_init.h"
@@ -1447,7 +1447,7 @@ void Com_Init(CvarSystem& cvars, CommandLine& cli, CommandBuffer& cbuf, CommandS
 
 		Sys_Init();
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
-		VM_Init();
+		VM::Init(cvars, cmd);
 		SV_Init();
 #ifdef _XBOX
 		//Load this earlier so it doesn't create a fragment in the middle of
@@ -2192,6 +2192,7 @@ void Com_ParseTextFileDestroy(class CGenericParser2 &parser)
 	parser.Clean();
 }
 
+#if 0
 CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable)
 {
 	fileHandle_t	f;
@@ -2223,4 +2224,4 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 
 	return parse;
 }
-
+#endif
