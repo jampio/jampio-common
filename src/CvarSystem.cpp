@@ -344,3 +344,21 @@ std::array<char, BIG_INFO_STRING> CvarSystem::InfoStringBig(int bit) {
 
 	return info;
 }
+
+void CvarSystem::Set(const char *var_name, const char *value) {
+	Set2(var_name, value, true);
+}
+
+void CvarSystem::SetValue(const char *var_name, float value) {
+	char val[32];
+	if (value == (int)value) {
+		Com_sprintf(val, sizeof(val), "%i",(int)value);
+	} else {
+		Com_sprintf(val, sizeof(val), "%f",value);
+	}
+	Set(var_name, val);
+}
+
+void CvarSystem::SetLatched(const char *var_name, const char *value) {
+	Set2(var_name, value, false);
+}

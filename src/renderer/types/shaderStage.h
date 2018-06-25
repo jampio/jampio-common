@@ -7,6 +7,7 @@
 #include "alphaGen.h"
 #include "acff.h"
 #include "surfaceSprite.h"
+#include "EGLFogOverride.h"
 
 constexpr auto NUM_TEXTURE_BUNDLES = 2;
 
