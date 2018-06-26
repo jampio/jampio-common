@@ -362,3 +362,7 @@ void CvarSystem::SetValue(const char *var_name, float value) {
 void CvarSystem::SetLatched(const char *var_name, const char *value) {
 	Set2(var_name, value, false);
 }
+
+void CvarSystem::Set(const char *name, int value) {
+	Set(name, va("%i", value));
+}

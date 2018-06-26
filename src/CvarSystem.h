@@ -33,6 +33,7 @@ public:
 	void Set(const char *name, const char *value);
 	void SetLatched(const char *name, const char *value);
 	void SetValue(const char *name, float value);
+	void Set(const char *name, int value);
 	void Reset(const char *name);
 	void SetCheatState();
 	// Handles variable inspection and changing from the console
