@@ -9,6 +9,7 @@ NET
 #include <jampio/shared/shared.h>
 #include "netadr.h"
 #include "msgtype.h"
+#include "CvarSystem.h"
 
 constexpr auto PACKET_BACKUP = 32;  // number of old messages that must be kept on client and
                                    // server for delta comrpession and ping estimation
@@ -73,7 +74,7 @@ typedef struct {
 	byte		unsentBuffer[MAX_MSGLEN];
 } netchan_t;
 
-void Netchan_Init( int qport );
+void Netchan_Init(CvarSystem& cvars, int qport);
 void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport );
 
 void Netchan_Transmit( netchan_t *chan, int length, const byte *data );

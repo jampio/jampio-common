@@ -1,45 +1,15 @@
-//Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "CRMManager.h"
 
-/************************************************************************************************
- *
- * RM_Manager.cpp
- *
- * Implements the CRMManager class.  The CRMManager class manages the arioche system.
- *
- ************************************************************************************************/
+CRMObjective *CRMManager::mCurObjective = 0;
 
-#include "RM_Headers.h"
-#include "../server/server.h"
-#include "../qcommon/qcommon.h"
-
-CRMObjective *CRMManager::mCurObjective=0;
-
-/************************************************************************************************
- * TheRandomMissionManager
- *	Pointer to only active CRMManager class
- *
- ************************************************************************************************/
-CRMManager *TheRandomMissionManager;
-
-/************************************************************************************************
- * CRMManager::CRMManager
- *	constructor
- *
- * inputs:
- *
- * return:
- *
- ************************************************************************************************/
-CRMManager::CRMManager(void)
-{
-	mLandScape = NULL;
-	mTerrain   = NULL;
-	mMission = NULL;
-	mCurPriority = 1;
-	mUseTimeLimit = false;
-	mAutomapSymbolCount = 0;
-}
+CRMManager::CRMManager()
+	: mLandScape(nullptr)
+	, mTerrain(nullptr)
+	, mMission(nullptr)
+	, mCurPriority(1)
+	, mUseTimeLimit(false)
+	, mAutomapSymbolCount(0)
+{}
 
 /************************************************************************************************
  * CRMManager::~CRMManager

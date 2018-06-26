@@ -305,7 +305,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		throw ("DISCONNECTED\n");
 	} else if ( code == ERR_DROP || code == ERR_DISCONNECT ) {
 		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
-		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
+		SV_Shutdown (*m_cvars, va("Server crashed: %s\n",  com_errorMessage));
 		CL_Disconnect( qtrue );
 		CL_FlushMemory( );
 		com_errorEntered = qfalse;
@@ -318,7 +318,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 		throw ("DROPPED\n");
 	} else if ( code == ERR_NEED_CD ) {
-		SV_Shutdown( "Server didn't have CD\n" );
+		SV_Shutdown( *m_cvars, "Server didn't have CD\n" );
 		if ( com_cl_running && com_cl_running->integer() ) {
 			CL_Disconnect( qtrue );
 			CL_FlushMemory( );
@@ -329,7 +329,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		throw ("NEED CD\n");
 	} else {
 		CL_Shutdown ();
-		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
+		SV_Shutdown (*m_cvars, va("Server fatal crashed: %s\n", com_errorMessage));
 	}
 
 	Com_Shutdown (*m_cvars);
@@ -349,7 +349,7 @@ do the apropriate things.
 void Com_Quit_f(CvarSystem& cvars, CommandSystem& cmd, CommandArgs& args) {
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
-		SV_Shutdown ("Server quit\n");
+		SV_Shutdown (cvars, "Server quit\n");
 		CL_Shutdown ();
 		Com_Shutdown (cvars);
 		FS_Shutdown(cmd, qtrue);
@@ -516,7 +516,7 @@ void Info_Print( const char *s ) {
 		l = o - key;
 		if (l < 20)
 		{
-			Com_Memset (o, ' ', 20-l);
+			memset(o, ' ', 20-l);
 			key[20] = 0;
 		}
 		else
@@ -913,13 +913,13 @@ Com_EventLoop
 Returns last event time
 =================
 */
-int Com_EventLoop(CommandBuffer& cbuf) {
+int Com_EventLoop(CvarSystem& cvars, CommandBuffer& cbuf) {
 	sysEvent_t	ev;
 	netadr_t	evFrom;
 	byte		bufData[MAX_MSGLEN];
 	msg_t		buf;
 
-	MSG_Init( &buf, bufData, sizeof( bufData ) );
+	MSG_Init(cvars, &buf, bufData, sizeof(bufData));
 
 	while ( 1 ) {
 		ev = Com_GetEvent();
@@ -995,7 +995,7 @@ int Com_EventLoop(CommandBuffer& cbuf) {
 				Com_Printf("Com_EventLoop: oversize packet\n");
 				continue;
 			}
-			Com_Memcpy( buf.data, (byte *)((netadr_t *)ev.evPtr + 1), buf.cursize );
+			memcpy( buf.data, (byte *)((netadr_t *)ev.evPtr + 1), buf.cursize );
 			if ( com_sv_running->integer() ) {
 				Com_RunAndTimeServerPacket( &evFrom, &buf );
 			} else {
@@ -1443,10 +1443,10 @@ void Com_Init(CvarSystem& cvars, CommandLine& cli, CommandBuffer& cbuf, CommandS
 		auto s = va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__);
 		com_version = cvars.Get("version", s, CVAR_ROM | CVAR_SERVERINFO);
 
-		SE_Init();
+		SE_Init(cvars);
 
 		Sys_Init();
-		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
+		Netchan_Init(cvars, Com_Milliseconds() & 0xffff);	// pick a port value that should be nice and random
 		VM::Init(cvars, cmd);
 		SV_Init();
 #ifdef _XBOX
@@ -1629,7 +1629,7 @@ try
 		minMsec = 1;
 	}
 	do {
-		com_frameTime = Com_EventLoop();
+		com_frameTime = Com_EventLoop(cvars, cbuf);
 		if ( lastTime > com_frameTime ) {
 			lastTime = com_frameTime;		// possible on first frame
 		}
@@ -1681,7 +1681,7 @@ try
 		if ( com_speeds->integer() ) {
 			timeBeforeEvents = Sys_Milliseconds ();
 		}
-		Com_EventLoop();
+		Com_EventLoop(cvars, cbuf);
 		cbuf.Execute ();
 
 

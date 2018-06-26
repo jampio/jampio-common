@@ -3,6 +3,8 @@
 #pragma once
 
 #include <jampio/shared/shared.h>
+#include "Cvar.h"
+#include "CvarSystem.h"
 
 // alter these to suit your own game...
 //
@@ -14,7 +16,7 @@
 #define sSE_DEBUGSTR_PREFIX		"["		// any string you want prefixing onto the debug versions of strings (to spot hardwired english etc)
 #define sSE_DEBUGSTR_SUFFIX		"]"		// ""
 
-extern cvar_t	*se_language;
+extern Cvar *se_language;
 
 // some needed text-equates, do not alter these under any circumstances !!!! (unless you're me. Which you're not)
 //
@@ -32,7 +34,7 @@ extern cvar_t	*se_language;
 #define sSE_INGAME_FILE_EXTENSION	".str"
 #define sSE_EXPORT_SAME				"#same"
 
-void	SE_Init				( void );
+void	SE_Init				(CvarSystem& cvars);
 void	SE_ShutDown			( void );
 void	SE_CheckForLanguageUpdates(void);
 int		SE_GetNumLanguages	( void );
@@ -63,37 +65,37 @@ int		SE_GetFlagMask		( const char *psFlagName );
 //
 inline SE_BOOL Language_IsRussian(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "russian")) ? SE_TRUE : SE_FALSE;	
+	return (se_language && !Q_stricmp(se_language->string(), "russian")) ? SE_TRUE : SE_FALSE;	
 }
 
 inline SE_BOOL Language_IsPolish(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "polish")) ? SE_TRUE : SE_FALSE;	
+	return (se_language && !Q_stricmp(se_language->string(), "polish")) ? SE_TRUE : SE_FALSE;	
 }
 
 inline SE_BOOL Language_IsKorean(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "korean")) ? SE_TRUE : SE_FALSE;
+	return (se_language && !Q_stricmp(se_language->string(), "korean")) ? SE_TRUE : SE_FALSE;
 }
 
 inline SE_BOOL Language_IsTaiwanese(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "taiwanese")) ? SE_TRUE : SE_FALSE;
+	return (se_language && !Q_stricmp(se_language->string(), "taiwanese")) ? SE_TRUE : SE_FALSE;
 }
 
 inline SE_BOOL Language_IsJapanese(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "japanese")) ? SE_TRUE : SE_FALSE;
+	return (se_language && !Q_stricmp(se_language->string(), "japanese")) ? SE_TRUE : SE_FALSE;
 }
 
 inline SE_BOOL Language_IsChinese(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "chinese")) ? SE_TRUE : SE_FALSE;
+	return (se_language && !Q_stricmp(se_language->string(), "chinese")) ? SE_TRUE : SE_FALSE;
 }
 
 inline SE_BOOL Language_IsThai(void)
 {
-	return (se_language && !Q_stricmp(se_language->string, "thai")) ? SE_TRUE : SE_FALSE;
+	return (se_language && !Q_stricmp(se_language->string(), "thai")) ? SE_TRUE : SE_FALSE;
 }
 
 

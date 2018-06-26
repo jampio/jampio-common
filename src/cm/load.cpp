@@ -443,7 +443,7 @@ CMod_LoadEntityString
 void CMod_LoadEntityString( lump_t *l, clipMap_t &cm ) {
 	cm.entityString = (char *)Hunk_Alloc( l->filelen, h_high );
 	cm.numEntityChars = l->filelen;
-	Com_Memcpy (cm.entityString, cmod_base + l->fileofs, l->filelen);
+	memcpy(cm.entityString, cmod_base + l->fileofs, l->filelen);
 }
 
 /*
@@ -460,7 +460,7 @@ void CMod_LoadVisibility( lump_t *l, clipMap_t &cm ) {
 	if ( !len ) {
 		cm.clusterBytes = ( cm.numClusters + 31 ) & ~31;
 		cm.visibility = (unsigned char *)Hunk_Alloc( cm.clusterBytes, h_high );
-		Com_Memset( cm.visibility, 255, cm.clusterBytes );
+		memset( cm.visibility, 255, cm.clusterBytes );
 		return;
 	}
 	buf = cmod_base + l->fileofs;
@@ -469,7 +469,7 @@ void CMod_LoadVisibility( lump_t *l, clipMap_t &cm ) {
 	cm.visibility = (unsigned char *)Hunk_Alloc( len, h_high );
 	cm.numClusters = LittleLong( ((int *)buf)[0] );
 	cm.clusterBytes = LittleLong( ((int *)buf)[1] );
-	Com_Memcpy (cm.visibility, buf + VIS_HEADER, len - VIS_HEADER );
+	memcpy(cm.visibility, buf + VIS_HEADER, len - VIS_HEADER );
 }
 
 //==================================================================
@@ -638,7 +638,7 @@ static void CM_LoadMap_Actual(CvarSystem& cvars, const char *name, qboolean clie
 	}
 
 	// free old stuff
-	Com_Memset( &cm, 0, sizeof( cm ) );
+	memset( &cm, 0, sizeof( cm ) );
 
 	if ( !name[0] ) {
 		cm.numLeafs = 1;
@@ -810,7 +810,7 @@ void CM_ClearMap( void )
 		cmg.landScape = NULL;
 	}
 
-	Com_Memset( &cmg, 0, sizeof( cmg ) );
+	memset( &cmg, 0, sizeof( cmg ) );
 	CM_ClearLevelPatches();
 
 	for(i = 0; i < NumSubBSP; i++)

@@ -1,55 +1,17 @@
-//Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "CRMObjective.h"
 
-/************************************************************************************************
- *
- * RM_Objective.cpp
- *
- * Implements the CRMObjective class.  This class is reponsible for parsing an objective 
- * from the mission file as well as linking the objective into the world.
- *
- ************************************************************************************************/
-
-#include "RM_Headers.h"
-
-/************************************************************************************************
- * CRMObjective::CRMObjective
- *	Constructs a random mission objective and fills in the default properties
- *
- * inputs:
- *  none
- *
- * return:
- *	none
- *
- ************************************************************************************************/
-CRMObjective::CRMObjective ( CGPGroup* group )
-{	
-	SetPriority(atoi(group->FindPairValue("priority", "0")));
-	SetMessage( group->FindPairValue("message",va("Objective %i Completed", GetPriority()) ) );
-	SetDescription(group->FindPairValue("description",va("Objective %i", GetPriority()) ) );
-	SetInfo(group->FindPairValue("info",va("Info %i", GetPriority()) ) );
-	SetTrigger(group->FindPairValue("trigger",""));
-	SetName(group->GetName());
-	
-/*	const char * soundPath = group->FindPairValue("completed_sound", "" ); 
-	if (soundPath)
-		mCompleteSoundID = G_SoundIndex(soundPath); 
-*/
-
-	mCompleted  = false;
-	mOrderIndex = -1;
-
-	// If no priority was specified for this objective then its active by default.
-	if ( GetPriority ( ) )
-	{
-		mActive	= false;
-	}
-	else
-	{
-		mActive = true;
-	}
-}
+CRMObjective::CRMObjective(/* const */CGPGroup &group)
+	: mPriority(atoi(group.FindPairValue("priority", "0")))
+	, mMessage(group.FindPairValue("message", va("Objective %i Completed", mPriority)))
+	, mDescription(group.FindPairValue("description", va("Objective %i", mPriority)))
+	, mInfo(group.FindPairValue("info", va("Info %i", mPriority)))
+	, mTrigger(group.FindPairValue("trigger", ""))
+	, mName(group.GetName())
+	, mCompleted(false)
+	, mOrderIndex(-1)
+	, mActive(!mPriority) // If no priority was specified for this objective then its active by default.
+	, mCompleteSoundID(0)
+{}	
 
 /************************************************************************************************
  * CRMObjective::FindRandomTrigger
@@ -119,8 +81,7 @@ CRMObjective::CRMObjective ( CGPGroup* group )
  *  false: objective failed to link
  *
  ************************************************************************************************/
-bool CRMObjective::Link ( )
-{
+bool CRMObjective::Link() {
 /*	CTriggerAriocheObjective* trigger;
 
 	// Look for a random trigger to associate this objective to.
@@ -133,3 +94,78 @@ bool CRMObjective::Link ( )
 	return true;
 }
 
+bool CRMObjective::IsCompleted() const {
+	return mCompleted;
+}
+
+bool CRMObjective::IsActive() const {
+	return mActive;
+}
+
+void CRMObjective::Activate() {
+	mActive = true;
+}
+
+void CRMObjective::Complete(bool comp) { 
+	mCompleted = comp;
+}
+
+int CRMObjective::GetPriority() const {
+	return mPriority;
+}
+
+int CRMObjective::GetOrderIndex() const {
+	return mOrderIndex;
+}
+
+const char *CRMObjective::GetMessage() const {
+	return mMessage.c_str();
+}
+
+const char *CRMObjective::GetDescription() const {
+	return mDescription.c_str();
+}
+
+const char *CRMObjective::GetInfo() const {
+	return mInfo.c_str();
+}
+
+const char *CRMObjective::GetName() const {
+	return mName.c_str();
+}
+
+const char *CRMObjective::GetTrigger() const {
+	return mTrigger.c_str();
+}
+
+int CRMObjective::CompleteSoundID() const {
+	return mCompleteSoundID;
+}
+
+void CRMObjective::SetPriority(int priority) {
+	mPriority = priority;
+}
+
+void CRMObjective::SetOrderIndex(int order) { 
+	mOrderIndex = order;
+}
+
+void CRMObjective::SetMessage(const char *msg) {
+	mMessage = msg;
+}
+
+void CRMObjective::SetDescription(const char *desc) {
+	mDescription = desc;
+}
+
+void CRMObjective::SetInfo(const char *info) {
+	mInfo = info;
+}
+
+void CRMObjective::SetName(const char *name) {
+	mName = name;
+}
+
+void CRMObjective::SetTrigger(const char *name) {
+	mTrigger = name;
+}

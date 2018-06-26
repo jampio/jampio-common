@@ -91,15 +91,6 @@ static const facet_t		*debugFacet;
 static qboolean		debugBlock;
 static vec3_t		debugBlockPoints[4];
 
-#if defined(BSPC)
-extern void *Hunk_Alloc( int size );
-
-static void *Hunk_Alloc( int size, ha_pref preference )
-{
-	return Hunk_Alloc( size );
-}
-#endif
-
 /*
 =================
 CM_ClearLevelPatches

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "msgtype.h"
+#include "CvarSystem.h"
 
-void MSG_Init (msg_t *buf, byte *data, int length);
+void MSG_Init (CvarSystem& cvars, msg_t *buf, byte *data, int length);
 void MSG_InitOOB( msg_t *buf, byte *data, int length );
 void MSG_Clear (msg_t *buf);
 void MSG_WriteData (msg_t *buf, const void *data, int length);

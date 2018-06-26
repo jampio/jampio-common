@@ -26,8 +26,21 @@ set(SOURCES
 	src/Cvar.cpp
 	src/CvarSystem.cpp
 	src/fs.cpp
+	src/msg.cpp
+	src/net.cpp
+	src/parser/CGenericParser.cpp
+	src/parser/CGPGroup.cpp
+	src/parser/CGPObject.cpp
+	src/parser/CGPValue.cpp
+	src/parser/CTextPool.cpp
+	src/parser/generic_parser.cpp
+	src/stringed_ingame.cpp
+	src/stringed_interface.cpp
 	src/VM.cpp
 )
+if(UNIX)
+	list(APPEND SOURCES src/net_unix.cpp)
+endif()
 add_library(jampiocommonpc STATIC ${SOURCES})
 add_library(jampiocommonded STATIC ${SOURCES})
 set_target_properties(jampiocommonpc PROPERTIES CXX_STANDARD 17)

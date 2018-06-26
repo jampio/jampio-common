@@ -4,35 +4,24 @@
 #include "mission.h"
 #include "automap_symbol.h"
 
-class CRMManager
-{
+class CRMManager {
 private:
-
-	CRMMission*				mMission;
-	CCMLandScape*			mLandScape;
-	CRandomTerrain*			mTerrain;
-	int						mPreviewTimer;
-	int						mCurPriority;
-	bool					mUseTimeLimit;
-
-	rmAutomapSymbol_t		mAutomapSymbols[MAX_AUTOMAP_SYMBOLS];
-	int						mAutomapSymbolCount;
-
-	void			UpdateStatisticCvars ( void );
-
+	CRMMission *mMission;
+	CCMLandScape *mLandScape;
+	CRandomTerrain *mTerrain;
+	int mPreviewTimer;
+	int mCurPriority;
+	bool mUseTimeLimit;
+	rmAutomapSymbol_t mAutomapSymbols[MAX_AUTOMAP_SYMBOLS];
+	int mAutomapSymbolCount;
+	void UpdateStatisticCvars();
 public:
-
-	// Constructors
-	CRMManager (void);
-	~CRMManager (void);
-
-	bool			LoadMission		( qboolean IsServer );
-	bool			SpawnMission	( qboolean IsServer );
-
-	// Accessors
-	void			SetLandScape	(CCMLandScape *landscape);
-	void			SetCurPriority	(int priority) { mCurPriority = priority; }
-
+	CRMManager();
+	~CRMManager();
+	bool LoadMission(bool IsServer);
+	bool SpawnMission(bool IsServer);
+	void SetLandScape(CCMLandScape *landscape);
+	void SetCurPriority(int priority) { mCurPriority = priority; }
 	CRandomTerrain*	GetTerrain		(void)	{ return mTerrain; }
 	CCMLandScape*	GetLandScape	(void)	{ return mLandScape; }
 	CRMMission*		GetMission		(void)  { return mMission; }
@@ -54,5 +43,3 @@ public:
 	// eek
 	static CRMObjective	*mCurObjective;
 };
-
-extern CRMManager*	TheRandomMissionManager;
